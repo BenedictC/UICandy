@@ -61,3 +61,30 @@ public struct SectionFooter<SectionIdentifier> {
         )
     }
 }
+
+
+// MARK: Init
+
+public extension SectionFooter {
+
+    init<T: CollectionReusableView>(
+        ofType viewType: T.Type,
+        configuration: @escaping (T, SectionIdentifier) -> Void = { _, _ in }
+    ) {
+        let elementKind = Self.elementKind
+        self.init(
+            supplementRegistrar: { collectionView in
+                collectionView.register(viewType, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: elementKind)
+            },
+            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifider in
+                let view = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: elementKind,
+                    withReuseIdentifier: reuseIdentifier,
+                    for: indexPath
+                ) as! T
+                configuration(view, sectionIdentifider)
+                return view
+            }
+        )
+    }
+}

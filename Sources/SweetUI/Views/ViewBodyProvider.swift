@@ -29,7 +29,7 @@ public protocol ViewBodyProvider: _ViewBodyProvider {
 }
 
 
-public protocol _ViewBodyProvider: UIView, CancellableStorageProvider { // Core functionality avoiding associated types
+public protocol _ViewBodyProvider: UIView { // Core functionality avoiding associated types
 
     // Implemented by ViewBodyProvider. Should not be overridden.
     @MainActor
@@ -66,23 +66,19 @@ public extension ViewBodyProvider {
     func awake() {
         // Default do nothing
     }
-
+    
     @MainActor
     func _initializeBodyHosting() {
-        self.storeCancellables(with: View.CancellableKey.awake) {
-            if body.superview == nil { // This causes body to be loaded
-                detectPotentialRetainCycle(of: self) {
-                    self.awake()
-                }
+        if body.superview == nil { // This causes body to be loaded
+            detectPotentialRetainCycle(of: self) {
+                self.awake()
             }
         }
-        self.storeCancellables(with: View.CancellableKey.loadBody) {
-            detectPotentialRetainCycle(of: self) {
-                let container = self.bodyContainer
-                let isSelfHosted = body == container
-                if !isSelfHosted {
-                    arrangeBody(body, in: container)
-                }
+        detectPotentialRetainCycle(of: self) {
+            let container = self.bodyContainer
+            let isSelfHosted = body == container
+            if !isSelfHosted {
+                arrangeBody(body, in: container)
             }
         }
     }

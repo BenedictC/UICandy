@@ -10,16 +10,9 @@ public typealias Control = _Control & ViewBodyProvider
 
 // MARK: - Implementation
 
-open class _Control: UIControl, TraitCollectionChangesProvider {
+open class _Control: UIControl {
 
     // MARK: Properties
-
-    public var traitCollectionChanges: AnyPublisher<TraitCollectionChanges, Never> { traitCollectionChangesController.traitCollectionChanges }
-    public var stateChanges: Published<UIControl.State>.Publisher { $_stateChanges }
-
-    @Published private var _stateChanges = UIControl.State.normal
-    private lazy var traitCollectionChangesController = TraitCollectionChangesController(initialTraitCollection: traitCollection)
-    fileprivate lazy var defaultCancellableStorage = CancellableStorage()
 
     override open var isEnabled: Bool {
         get { super.isEnabled }
@@ -46,12 +39,6 @@ open class _Control: UIControl, TraitCollectionChangesProvider {
         UIView.initializeBodyHosting(of: self)
     }
 
-    internal init(stateChanges: Published<UIControl.State>) {
-        self.__stateChanges = stateChanges
-        super.init(frame: .zero)
-        UIView.initializeBodyHosting(of: self)
-    }
-
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -59,11 +46,6 @@ open class _Control: UIControl, TraitCollectionChangesProvider {
 
 
     // MARK: View events
-
-    open override func traitCollectionDidChange(_ previous: UITraitCollection?) {
-        super.traitCollectionDidChange(previous)
-        traitCollectionChangesController.send(previous: previous, current: traitCollection)
-    }
 
     public override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         let result = super.beginTracking(touch, with: event)
@@ -87,14 +69,6 @@ open class _Control: UIControl, TraitCollectionChangesProvider {
     private func notifyOfStateChange() {
         _stateChanges = state
     }
-}
-
-
-// MARK: - CancellableStorageProvider defaults
-
-extension CancellableStorageProvider where Self: _Control {
-
-    public var cancellableStorage: CancellableStorage { defaultCancellableStorage }
 }
 
 
