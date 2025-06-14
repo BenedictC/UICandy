@@ -1,11 +1,18 @@
 import UIKit
-import Combine
 
 
 public final class Carousel: UIView {
 
+    // MARK: Types
+
+    public protocol Delegate: AnyObject {
+        func carousel(_ carousel: Carousel, didChangeSelectedItemIndex selectedItemIndex: Int?)
+    }
+
+
     // MARK: Properties
 
+    public weak var delegate: Delegate?
     public var items: [UIView] {
         didSet { updateItemsStack() }
     }
@@ -16,9 +23,6 @@ public final class Carousel: UIView {
     public private(set) var selectedItemIndex: Int?
     public var selectedItem: UIView? { selectedItemIndex.flatMap { items[$0] } }
 
-    private var cancellable: AnyCancellable!
-    private var selectedItemIndexSubject: AnySubject<Int, Never>?
-    
 
     // MARK: Views
 
@@ -29,13 +33,12 @@ public final class Carousel: UIView {
     }
         .showsHorizontalScrollIndicator(false)
         .pagingEnabled(true)
-        .scrollEnabled(false)
         .clipsToBounds(false)
 
 
     // MARK: Instance life cycle
 
-    public init(inset: CGFloat = 0, itemWidth: CGFloat? = nil, spacing: CGFloat = 0, alignment: HStack.Alignment = .fill, selectedItemIndex: some Publisher<Int, Never>, items: [UIView] = []) {
+    public init(inset: CGFloat = 0, itemWidth: CGFloat? = nil, spacing: CGFloat = 0, alignment: HStack.Alignment = .fill, items: [UIView] = []) {
         let items = items
         self.items = items
         self.spacing = spacing
@@ -65,28 +68,11 @@ public final class Carousel: UIView {
         }
         updateItemsStack()
 
-        // Subscribe after the view has been built otherwise the initial value won't configure the view
-        cancellable = selectedItemIndex.sink { [weak self] index in
-            let isIndexValid = index > -1 && index < items.count
-            if isIndexValid {
-                self?.selectedItemIndex = index
-                if let scrollView = self?.scrollView, !scrollView.isTracking {
-                    self?.setContentOffsetToShowItem(at: index, animated: true)
-                }
-            }
-        }
-    }
-
-    public convenience init(inset: CGFloat = 0, itemWidth: CGFloat? = nil, spacing: CGFloat = 0, alignment: HStack.Alignment = .fill, selectedItemIndex: some Subject<Int, Never>, items: [UIView] = []) {
-        let publisher = selectedItemIndex.eraseToAnyPublisher()
-        self.init(inset: inset, itemWidth: itemWidth, spacing: spacing, alignment: alignment, selectedItemIndex: publisher, items: items)
-
-        self.selectedItemIndexSubject = selectedItemIndex.eraseToAnySubject()
-        self.scrollView.isScrollEnabled = true
         self.scrollView.touchesDidEndHandler = { [weak self] in
             self?.setSelectedItemIndexFromCurrentItem(alwaysSend: true)
         }
     }
+
 
     @available(*, unavailable)
     public required init?(coder: NSCoder) {
@@ -118,6 +104,18 @@ public final class Carousel: UIView {
         }
 
         adjustScrollViewContentInset()
+    }
+
+    func setIndexIfValid(_ index: Int) {
+        "TODO: Hook this in to self.selectedItemIndex.set"
+        "TODO: Call the delegate when self.selectedItemIndex changes except when triggered by the setter"
+//        let isIndexValid = index > -1 && index < items.count
+//        if isIndexValid {
+//            self?.selectedItemIndex = index
+//            if let scrollView = self?.scrollView, !scrollView.isTracking {
+//                self?.setContentOffsetToShowItem(at: index, animated: true)
+//            }
+//        }
     }
 
     public override func layoutSubviews() {
@@ -189,15 +187,16 @@ private extension Carousel {
     }
 
     func setSelectedItemIndexFromCurrentItem(alwaysSend: Bool = false) {
-        guard let selectedItemIndexSubject else {
-            return
-        }
-        if let itemIndex = indexOfCurrentItem() {
-            let hasChanged = selectedItemIndex != itemIndex
-            if hasChanged || alwaysSend {
-                selectedItemIndexSubject.send(itemIndex)
-            }
-        }
+        "TODO: "
+//        guard let selectedItemIndexSubject else {
+//            return
+//        }
+//        if let itemIndex = indexOfCurrentItem() {
+//            let hasChanged = selectedItemIndex != itemIndex
+//            if hasChanged || alwaysSend {
+//                selectedItemIndexSubject.send(itemIndex)
+//            }
+//        }
     }
 
     func adjustScrollViewContentInset() {
@@ -242,11 +241,7 @@ private class CarouselScrollView<Content: UIView>: ScrollView<Content> {
 
 public extension Carousel {
 
-    convenience init(inset: CGFloat = 0, itemWidth: CGFloat? = nil, spacing: CGFloat = 0, alignment: HStack.Alignment = .fill, selectedItemIndex: some Publisher<Int, Never>, @SubviewsBuilder items itemsBuilder: () -> [UIView]) {
-        self.init(inset: inset, itemWidth: itemWidth, spacing: spacing, alignment: alignment, selectedItemIndex: selectedItemIndex, items: itemsBuilder())
-    }
-
-    convenience init(inset: CGFloat = 0, itemWidth: CGFloat? = nil, spacing: CGFloat = 0, alignment: HStack.Alignment = .fill, selectedItemIndex: some Subject<Int, Never>, @SubviewsBuilder items itemsBuilder: () -> [UIView]) {
-        self.init(inset: inset, itemWidth: itemWidth, spacing: spacing, alignment: alignment, selectedItemIndex: selectedItemIndex, items: itemsBuilder())
+    convenience init(inset: CGFloat = 0, itemWidth: CGFloat? = nil, spacing: CGFloat = 0, alignment: HStack.Alignment = .fill, @SubviewsBuilder items itemsBuilder: () -> [UIView]) {
+        self.init(inset: inset, itemWidth: itemWidth, spacing: spacing, alignment: alignment, items: itemsBuilder())
     }
 }

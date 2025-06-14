@@ -4,16 +4,13 @@ import UIKit
 final class ContentCell<Content: UIView>: UICollectionViewCell {
 
     private(set) var content: Content?
-    let cancellableStorage = CancellableStorage()
 
     var hasContent: Bool { content != nil }
 
     func replaceContent(_ contentBuilder: (UICollectionViewCell, Content?) -> Content) {
         let stale = self.content
 
-        let fresh = self.cancellableStorage.storeCancellables {
-            contentBuilder(self, stale)
-        }
+        let fresh = contentBuilder(self, stale)
 
         if stale != fresh {
             stale?.removeFromSuperview()
