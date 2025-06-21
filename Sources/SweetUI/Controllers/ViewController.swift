@@ -9,13 +9,13 @@ public typealias ViewController = _ViewController & ViewControllerRequirements
 
 // MARK: - Associated Types
 
-public protocol ViewControllerRequirements: _ViewControllerRequirements {
+public protocol ViewControllerRequirements: _ViewControllerRequirements, ViewStateHosting {
     associatedtype View: UIView
     
     var rootView: View { get }
 }
 
-@MainActor
+
 public protocol _ViewControllerRequirements: _ViewController {
     var _rootView: UIView { get }
     func awake()
@@ -33,6 +33,9 @@ public extension ViewControllerRequirements {
 open class _ViewController: UIViewController {
 
     // MARK: Properties
+
+    public lazy var viewStateObservations = [ViewStateObservation]()
+
 
     private let retainCycleAdvice =
     """
@@ -82,5 +85,12 @@ open class _ViewController: UIViewController {
         if shouldSetBackground {
             self.view.backgroundColor = .systemBackground
         }
+
+        (self as? ViewStateHosting)?.initializeViewStateObserving()
+    }
+
+    override open func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        (self as? ViewStateHosting)?.performViewStateObservationUpdates()
     }
 }

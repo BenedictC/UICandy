@@ -5,7 +5,13 @@ import UIKit
 
 // MARK: - View
 
-public typealias Control = _Control & ViewBodyProvider
+public typealias Control = _Control & ViewBodyProvider & ViewStateHosting
+
+
+extension UIControl.Event {
+
+    static var controlDidChangeState: Self { _Control.stateDidChangeEvent }
+}
 
 
 // MARK: - Implementation
@@ -13,6 +19,12 @@ public typealias Control = _Control & ViewBodyProvider
 open class _Control: UIControl {
 
     // MARK: Properties
+
+    public lazy var viewStateObservations = [ViewStateObservation]()
+
+    /// Value used to notify of state changes via sendAction. Change this value if the default conflicts with an existing application value
+    // The following values are available for application use: 1 << 24, 1 << 25, 1 << 26, and 1 << 27
+    public static var stateDidChangeEvent = UIControl.Event(rawValue: 1 << 24)
 
     override open var isEnabled: Bool {
         get { super.isEnabled }
@@ -37,6 +49,7 @@ open class _Control: UIControl {
     public init() {
         super.init(frame: .zero)
         UIView.initializeBodyHosting(of: self)
+        (self as? ViewStateHosting)?.initializeViewStateObserving()
     }
 
     @available(*, unavailable)
@@ -45,7 +58,7 @@ open class _Control: UIControl {
     }
 
 
-    // MARK: View events
+    // MARK: Touch handling
 
     public override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         let result = super.beginTracking(touch, with: event)
@@ -67,7 +80,15 @@ open class _Control: UIControl {
     // MARK: State management
 
     private func notifyOfStateChange() {
-        _stateChanges = state
+        sendActions(for: Self.stateDidChangeEvent)
+    }
+
+
+    // MARK: Layout
+
+    override open func layoutSubviews() {
+        (self as? ViewStateHosting)?.performViewStateObservationUpdates()
+        super.layoutSubviews()
     }
 }
 
