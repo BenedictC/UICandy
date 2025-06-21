@@ -1,21 +1,32 @@
 import UIKit
 
 
-public typealias CollectionReusableView = _CollectionReusableView & ViewBodyProvider
+public typealias CollectionReusableView = _CollectionReusableView & ViewBodyProvider & ViewStateHosting
 
 
 open class _CollectionReusableView: UICollectionReusableView, ReuseIdentifiable {
+
+    // MARK: Properties
+
+    public lazy var viewStateObservations = [ViewStateObservation]()
+
 
     // MARK: Instance life cycle
 
     public required override init(frame: CGRect) {
         super.init(frame: frame)
         Self.initializeBodyHosting(of: self)
+        (self as? ViewStateHosting)?.initializeViewStateObserving()
     }
 
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override open func layoutSubviews() {
+        (self as? ViewStateHosting)?.performViewStateObservationUpdates()
+        super.layoutSubviews()
     }
 }
 
