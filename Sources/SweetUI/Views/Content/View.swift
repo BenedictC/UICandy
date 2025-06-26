@@ -27,7 +27,7 @@ open class _View: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override open func layoutSubviews() {
+    open override func layoutSubviews() {
         (self as? ViewStateHosting)?.performViewStateObservationUpdates()
         super.layoutSubviews()
     }

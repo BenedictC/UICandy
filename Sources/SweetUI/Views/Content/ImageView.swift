@@ -5,11 +5,11 @@ public final class ImageView: UIImageView {
 
     // MARK: Properties
 
-    public var maintainsAspectRatio: Bool {
+    open var maintainsAspectRatio: Bool {
         didSet { updateAspectRatioConstraint() }
     }
 
-    public override var image: UIImage? {
+    open override var image: UIImage? {
         get { super.image }
         set { super.image = newValue;  updateAspectRatioConstraint() }
     }

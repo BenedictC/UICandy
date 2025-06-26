@@ -26,19 +26,19 @@ open class _Control: UIControl {
     // The following values are available for application use: 1 << 24, 1 << 25, 1 << 26, and 1 << 27
     public static var stateDidChangeEvent = UIControl.Event(rawValue: 1 << 24)
 
-    override open var isEnabled: Bool {
+    open override var isEnabled: Bool {
         get { super.isEnabled }
         set { super.isEnabled = newValue; notifyOfStateChange() }
     }
-    override open var isSelected: Bool {
+    open override var isSelected: Bool {
         get { super.isSelected }
         set { super.isSelected = newValue; notifyOfStateChange() }
     }
-    override open var isHighlighted: Bool {
+    open override var isHighlighted: Bool {
         get { super.isHighlighted }
         set { super.isHighlighted = newValue; notifyOfStateChange() }
     }
-    override open var isHidden: Bool {
+    open override var isHidden: Bool {
         get { super.isHidden }
         set { super.isHidden = newValue; notifyOfStateChange() }
     }
@@ -60,18 +60,18 @@ open class _Control: UIControl {
 
     // MARK: Touch handling
 
-    public override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
+    open override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         let result = super.beginTracking(touch, with: event)
         notifyOfStateChange()
         return result
     }
 
-    public override func cancelTracking(with event: UIEvent?) {
+    open override func cancelTracking(with event: UIEvent?) {
         super.cancelTracking(with: event)
         notifyOfStateChange()
     }
 
-    public override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
+    open override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
         super.endTracking(touch, with: event)
         notifyOfStateChange()
     }
@@ -86,7 +86,7 @@ open class _Control: UIControl {
 
     // MARK: Layout
 
-    override open func layoutSubviews() {
+    open override func layoutSubviews() {
         (self as? ViewStateHosting)?.performViewStateObservationUpdates()
         super.layoutSubviews()
     }
