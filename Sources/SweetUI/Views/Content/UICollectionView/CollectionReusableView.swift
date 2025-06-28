@@ -13,7 +13,7 @@ open class _CollectionReusableView: UICollectionReusableView, ReuseIdentifiable 
 
     // MARK: Instance life cycle
 
-    open required override init(frame: CGRect) {
+    required public override init(frame: CGRect) {
         super.init(frame: frame)
         Self.initializeBodyHosting(of: self)
         (self as? ViewStateHosting)?.initializeViewStateObserving()
