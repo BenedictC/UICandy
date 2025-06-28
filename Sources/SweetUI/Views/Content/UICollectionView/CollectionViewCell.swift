@@ -2,15 +2,12 @@ import Foundation
 import UIKit
 
 
-// MARK: - ConfigurableCollectionViewCell
-
-public protocol ConfigurableCollectionViewCell: UICollectionViewCell, ReusableViewConfigurable {
-}
-
-
 // MARK: - CollectionViewCell
 
-public typealias CollectionViewCell = _CollectionViewCell & ConfigurableCollectionViewCell & ViewBodyProvider & ViewStateHosting
+public typealias CollectionViewCell = _CollectionViewCell
+                                    & ItemRepresentable
+                                    & ViewBodyProvider
+                                    & ViewStateHosting
 
 
 open class _CollectionViewCell: UICollectionViewCell, ReuseIdentifiable {

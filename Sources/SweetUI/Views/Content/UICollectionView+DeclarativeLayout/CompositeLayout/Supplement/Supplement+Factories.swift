@@ -5,14 +5,14 @@ import UIKit
 
 public extension Supplement {
 
-    init<V: ReusableViewConfigurable>(
+    init<V: UICollectionViewCell & ItemRepresentable>(
         _ viewClass: V.Type,
         size: NSCollectionLayoutSize? = nil,
         containerAnchor: NSCollectionLayoutAnchor,
         itemAnchor: NSCollectionLayoutAnchor? = nil
     ) {
         let elementKind = UniqueIdentifier("SupplementaryView").value
-        let reuseIdentifier = elementKind
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
         self.init(
             elementKind: elementKind,
             supplementRegistrar: { collectionView in
@@ -49,8 +49,8 @@ public extension Supplement {
     {
         let viewClass = UICollectionViewListCell.self
         let elementKind = optionalElementKind ?? UniqueIdentifier("SupplementaryView").value
-        let reuseIdentifier = UniqueIdentifier(elementKind).value
-
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
+        
         self.init(
             elementKind: elementKind,
             supplementRegistrar: { collectionView in

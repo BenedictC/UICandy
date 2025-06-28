@@ -44,33 +44,3 @@ public struct CollectionViewLayoutBehaviors<SectionIdentifier: Hashable, ItemIde
         self.sectionSnapshotHandlers = sectionSnapshotHandlers
     }
 }
-
-
-// MARK: - ReusableViewConfigurable
-
-public protocol ReusableViewConfigurable: UICollectionReusableView {
-
-    associatedtype Item = Void
-    associatedtype Value = Item
-
-    var item: Item? { get set }
-
-    func configure(withValue value: Value)
-}
-
-
-public extension ReusableViewConfigurable where Item == Void {
-
-    var item: Void? {
-        get { () }
-        set {  }
-    }
-}
-
-
-public extension ReusableViewConfigurable where Item == Value {
-
-    func configure(withValue value: Value) {
-        item = value
-    }
-}

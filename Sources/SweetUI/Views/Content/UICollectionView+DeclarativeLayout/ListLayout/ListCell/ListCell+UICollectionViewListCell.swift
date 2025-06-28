@@ -4,42 +4,21 @@ import UIKit
 @available(iOS 15, *)
 public extension ListCell {
 
-    static func withListCell(
-        configuration: @escaping (UICollectionViewListCell, ItemIdentifier) -> Void
-    ) -> ListCell<ItemIdentifier> {
-        let reuseIdentifier = UniqueIdentifier("\(UICollectionViewListCell.self)").value
-        return ListCell(
+    init(configuration: @escaping (UICollectionViewListCell, UICellConfigurationState, ItemIdentifier) -> Void) {
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
+        
+        self = ListCell(
             cellRegistrar: { collectionView in
                 collectionView.register(UICollectionViewListCell.self, forCellWithReuseIdentifier: reuseIdentifier)
             },
             cellProvider: { collectionView, indexPath, value in
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! UICollectionViewListCell
-                configuration(cell, value)
-                return cell
-            }
-        )
-    }
-}
-
-
-@available(iOS 16, *)
-public extension ListCell {
-
-    static func withContentConfiguration(
-        _ contentConfiguration: @escaping (inout UIListContentConfiguration, inout UIBackgroundConfiguration?, ItemIdentifier) -> Void
-    ) -> ListCell<ItemIdentifier> {
-        let reuseIdentifier = UniqueIdentifier("\(UICollectionViewListCell.self)").value
-        return ListCell(
-            cellRegistrar: { collectionView in
-                collectionView.register(UICollectionViewListCell.self, forCellWithReuseIdentifier: reuseIdentifier)
-            },
-            cellProvider: { collectionView, indexPath, value in
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! UICollectionViewListCell
-                var content = cell.defaultContentConfiguration()
-                var background: UIBackgroundConfiguration? = cell.defaultBackgroundConfiguration()
-                contentConfiguration(&content, &background, value)
-                cell.contentConfiguration = content
-                cell.backgroundConfiguration = background
+                cell.configurationUpdateHandler = { cell, state in
+                    guard let cell = cell as? UICollectionViewListCell else {
+                        return
+                    }
+                    configuration(cell, state, value)
+                }
                 return cell
             }
         )

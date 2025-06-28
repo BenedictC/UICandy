@@ -26,10 +26,10 @@ public struct Background: Decoration {
 public extension Background {
 
     init<T: UICollectionReusableView>(
-        _ viewClass: T.Type,
+        viewClass: T.Type,
         elementKind optionalElementKind: String? = nil,
-        zIndex: Int? = nil)
-    {
+        zIndex: Int? = nil
+    ) {
         let elementKind = optionalElementKind ?? UniqueIdentifier("Section Background").value
         let viewClass = T.self
         let viewRegistrar = { (layout: UICollectionViewLayout) in
@@ -41,8 +41,8 @@ public extension Background {
     init(
         elementKind optionalElementKind: String? = nil,
         zIndex: Int? = nil,
-        bodyFactory: @escaping () -> UIView)
-    {
+        bodyFactory: @escaping () -> UIView
+    ) {
         let elementKind = optionalElementKind ?? UniqueIdentifier("Section Background").value
         let viewClass: AnyClass = ConfigurableBackground.makeSubclass(bodyFactory: bodyFactory)
         let viewRegistrar = { (layout: UICollectionViewLayout) in
@@ -53,6 +53,9 @@ public extension Background {
 }
 
 
+// MARK: - ConfigurableBackground
+
+// We can't use StaticContentReusableCollectionView because decorationViews cannot be configured once they've been dequeued.
 private class ConfigurableBackground: UICollectionReusableView {
 
     static var classAndBodyFactoryPairs = [(class: AnyClass, factory: () -> UIView)]()
