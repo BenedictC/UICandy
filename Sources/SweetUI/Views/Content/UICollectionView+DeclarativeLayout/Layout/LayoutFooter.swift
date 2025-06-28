@@ -11,7 +11,8 @@ public struct LayoutFooter {
 
     // MARK: Properties
 
-    let elementKind = UniqueIdentifier("LayoutFooter").value
+    static let elementKind = UniqueIdentifier("LayoutFooter").value
+    var elementKind: String { Self.elementKind }
     private let supplementRegistrar: SupplementRegistrar
     private let supplementProvider: SupplementProvider
 
@@ -62,26 +63,46 @@ public struct LayoutFooter {
 }
 
 
-// MARK: - Static
+// MARK: - Inits
 
 public extension LayoutFooter {
+
+    init<T: UICollectionReusableView>(
+        ofType viewType: T.Type,
+        configuration: @escaping (T) -> Void = { _ in }
+    ) {
+        let elementKind = Self.elementKind
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
+
+        self.init(
+            supplementRegistrar: { collectionView in
+                collectionView.register(viewType, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
+            },
+            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifier in
+                let view = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: elementKind,
+                    withReuseIdentifier: reuseIdentifier,
+                    for: indexPath
+                ) as! T
+                configuration(view)
+                return view
+            }
+        )
+    }
 
     init<Content: UIView>(
         contentBuilder: @escaping () -> Content
     ) {
-        typealias CellType = ContentCell<Content>
-        let elementKind = self.elementKind
+        typealias ViewType = StaticContentReusableCollectionView<Content>
+        let elementKind = Self.elementKind
         let reuseIdentifier = UniqueIdentifier("\(Self.self) reuseIdentifier").value
+        
         self.supplementRegistrar = { collectionView in
-            collectionView.register(CellType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
+            collectionView.register(ViewType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
         }
         self.supplementProvider = { _, collectionView, indexPath, sectionIdentifier in
-            let cell = collectionView.dequeueReusableSupplementaryView(ofKind: elementKind, withReuseIdentifier: reuseIdentifier, for: indexPath) as! CellType
-            if !cell.hasContent {
-                cell.replaceContent { _, content in
-                    contentBuilder()
-                }
-            }
+            let cell = collectionView.dequeueReusableSupplementaryView(ofKind: elementKind, withReuseIdentifier: reuseIdentifier, for: indexPath) as! ViewType
+            cell.setContentIfNeeded(contentBuilder: { _ in contentBuilder() })
             return cell
         }
     }

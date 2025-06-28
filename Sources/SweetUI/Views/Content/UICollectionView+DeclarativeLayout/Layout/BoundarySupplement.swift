@@ -54,25 +54,27 @@ public struct BoundarySupplement<Value> {
 }
 
 
-// MARK: - Content
+
+// MARK: Factories
 
 public extension BoundarySupplement {
 
-    init<Content: UIView>(
+    init<ViewType: UICollectionReusableView>(
+        ofType viewType: ViewType.Type,
         size: NSCollectionLayoutSize,
         containerAnchor: NSCollectionLayoutAnchor,
         itemAnchor: NSCollectionLayoutAnchor?,
         extendsBoundary: Bool?,
         pinToVisibleBounds: Bool?,
         zIndex: Int?,
-        contentBuilder: @escaping (_ existing: Content?, _ value: Value) -> Content
+        configuration: @escaping (ViewType, Value) -> Void
     ) {
-        typealias CellType = ContentCell<Content>
         let elementKind = UniqueIdentifier("\(Self.self) elementKind").value
         let reuseIdentifier = UniqueIdentifier("\(Self.self) reuseIdentifier").value
+
         self.init(
             supplementRegistrar: { collectionView in
-                collectionView.register(CellType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
+                collectionView.register(ViewType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
             },
             layoutBoundarySupplementaryItemProvider: {
                 let item = NSCollectionLayoutBoundarySupplementaryItem(
@@ -87,40 +89,88 @@ public extension BoundarySupplement {
                 return item
             },
             supplementProvider: { _, collectionView, indexPath, value in
-                let cell = collectionView.dequeueReusableSupplementaryView(ofKind: elementKind, withReuseIdentifier: reuseIdentifier, for: indexPath) as! CellType
-                cell.replaceContent { _, content in
-                    contentBuilder(content, value)
-                }
-                return cell
+                let view = collectionView.dequeueReusableSupplementaryView(ofKind: elementKind, withReuseIdentifier: reuseIdentifier, for: indexPath) as! ViewType
+                configuration(view, value)
+                return view
+            }
+        )
+    }
+
+    init<ViewType: CollectionReusableView>(
+        ofType viewType: ViewType.Type,
+        size: NSCollectionLayoutSize,
+        containerAnchor: NSCollectionLayoutAnchor,
+        itemAnchor: NSCollectionLayoutAnchor?,
+        extendsBoundary: Bool?,
+        pinToVisibleBounds: Bool?,
+        zIndex: Int?
+    ) where ViewType.Item == Value {
+        let elementKind = UniqueIdentifier("\(Self.self) elementKind").value
+        let reuseIdentifier = UniqueIdentifier("\(Self.self) reuseIdentifier").value
+        
+        self.init(
+            supplementRegistrar: { collectionView in
+                collectionView.register(ViewType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
+            },
+            layoutBoundarySupplementaryItemProvider: {
+                let item = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: size,
+                    elementKind: elementKind,
+                    containerAnchor: containerAnchor,
+                    itemAnchor: itemAnchor ?? containerAnchor
+                )
+                extendsBoundary.flatMap { item.extendsBoundary = $0 }
+                pinToVisibleBounds.flatMap { item.pinToVisibleBounds = $0 }
+                zIndex.flatMap { item.zIndex = $0 }
+                return item
+            },
+            supplementProvider: { _, collectionView, indexPath, value in
+                let view = collectionView.dequeueReusableSupplementaryView(ofKind: elementKind, withReuseIdentifier: reuseIdentifier, for: indexPath) as! ViewType
+                view.item = value
+                return view
             }
         )
     }
 }
 
 
-////// MARK: - AnyBoundarySupplement
-////
-////public struct AnyBoundarySupplement<Value>: BoundarySupplement {
-////
-////    let erased: any BoundarySupplement<Value>
-////
-////    public func registerReusableViews(in collectionView: UICollectionView) {
-////        erased.registerReusableViews(in: collectionView)
-////    }
-////
-////    public func makeLayoutBoundarySupplementaryItem() -> NSCollectionLayoutBoundarySupplementaryItem {
-////        erased.makeLayoutBoundarySupplementaryItem()
-////    }
-////
-////    public func makeSupplementaryView(ofKind elementKind: String, for collectionView: UICollectionView, indexPath: IndexPath, value: Value) -> UICollectionReusableView? {
-////        erased.makeSupplementaryView(ofKind: elementKind, for: collectionView, indexPath: indexPath, value: value)
-////    }
-////}
-////
-////
-////public extension BoundarySupplement {
-////
-////    func eraseToAnyBoundarySupplement() -> AnyBoundarySupplement<Value> {
-////        AnyBoundarySupplement(erased: self)
-////    }
-////}
+// MARK: - Content
+
+public extension BoundarySupplement {
+
+    init<Content: UIView>(
+        size: NSCollectionLayoutSize,
+        containerAnchor: NSCollectionLayoutAnchor,
+        itemAnchor: NSCollectionLayoutAnchor?,
+        extendsBoundary: Bool?,
+        pinToVisibleBounds: Bool?,
+        zIndex: Int?,
+        contentBuilder: @escaping () -> Content
+    ) {
+        typealias ViewType = StaticContentReusableCollectionView<Content>
+        let elementKind = UniqueIdentifier("\(Self.self) elementKind").value
+        let reuseIdentifier = UniqueIdentifier("\(Self.self) reuseIdentifier").value
+        self.init(
+            supplementRegistrar: { collectionView in
+                collectionView.register(ViewType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
+            },
+            layoutBoundarySupplementaryItemProvider: {
+                let item = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: size,
+                    elementKind: elementKind,
+                    containerAnchor: containerAnchor,
+                    itemAnchor: itemAnchor ?? containerAnchor
+                )
+                extendsBoundary.flatMap { item.extendsBoundary = $0 }
+                pinToVisibleBounds.flatMap { item.pinToVisibleBounds = $0 }
+                zIndex.flatMap { item.zIndex = $0 }
+                return item
+            },
+            supplementProvider: { _, collectionView, indexPath, value in
+                let cell = collectionView.dequeueReusableSupplementaryView(ofKind: elementKind, withReuseIdentifier: reuseIdentifier, for: indexPath) as! ViewType
+                cell.setContentIfNeeded(contentBuilder: { _ in contentBuilder() })
+                return cell
+            }
+        )
+    }
+}

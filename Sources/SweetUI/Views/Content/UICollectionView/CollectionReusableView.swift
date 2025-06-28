@@ -1,7 +1,13 @@
+import Foundation
 import UIKit
 
 
-public typealias CollectionReusableView = _CollectionReusableView & ViewBodyProvider & ViewStateHosting
+// MARK: - CollectionReusableView
+
+public typealias CollectionReusableView = _CollectionReusableView
+                                        & ItemRepresentable
+                                        & ViewBodyProvider
+                                        & ViewStateHosting
 
 
 open class _CollectionReusableView: UICollectionReusableView, ReuseIdentifiable {

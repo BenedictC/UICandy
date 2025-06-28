@@ -63,26 +63,69 @@ public struct SectionFooter<SectionIdentifier> {
 }
 
 
-// MARK: Init
+// MARK: - Inits
 
 public extension SectionFooter {
 
-    init<T: CollectionReusableView>(
+    init<T: UICollectionReusableView>(
         ofType viewType: T.Type,
         configuration: @escaping (T, SectionIdentifier) -> Void = { _, _ in }
     ) {
         let elementKind = Self.elementKind
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
+
         self.init(
             supplementRegistrar: { collectionView in
-                collectionView.register(viewType, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: elementKind)
+                collectionView.register(viewType, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
             },
-            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifider in
+            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifier in
                 let view = collectionView.dequeueReusableSupplementaryView(
                     ofKind: elementKind,
                     withReuseIdentifier: reuseIdentifier,
                     for: indexPath
                 ) as! T
-                configuration(view, sectionIdentifider)
+                configuration(view, sectionIdentifier)
+                return view
+            }
+        )
+    }
+
+    init<T: CollectionReusableView>(ofType viewType: T.Type) where T.Item == SectionIdentifier {
+        let elementKind = Self.elementKind
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
+
+        self.init(
+            supplementRegistrar: { collectionView in
+                collectionView.register(viewType, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
+            },
+            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifier in
+                let view = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: elementKind,
+                    withReuseIdentifier: reuseIdentifier,
+                    for: indexPath
+                ) as! T
+                view.item = sectionIdentifier
+                return view
+            }
+        )
+    }
+
+    init<T: UIView>(content: @escaping () -> T) {
+        typealias ViewType = StaticContentReusableCollectionView<T>
+        let elementKind = Self.elementKind
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
+
+        self.init(
+            supplementRegistrar: { collectionView in
+                collectionView.register(ViewType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
+            },
+            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifier in
+                let view = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: elementKind,
+                    withReuseIdentifier: reuseIdentifier,
+                    for: indexPath
+                ) as! ViewType
+                view.setContentIfNeeded(contentBuilder: { _ in content() })
                 return view
             }
         )
