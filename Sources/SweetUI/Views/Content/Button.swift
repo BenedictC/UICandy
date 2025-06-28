@@ -40,7 +40,7 @@ public final class Button<Body: UIView>: Control {
         }
     }
 
-    open override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+    public override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let bodyPoint = convert(point, to: body)
         if let subview = hitTestHandler(body, bodyPoint, event) {
             return subview
