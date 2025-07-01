@@ -100,7 +100,7 @@ public final class ViewState<Value>: ReadOnlyViewState<Value>, AnyViewState {
 
 // MARK: - ReadOnlyViewState
 
-public class ReadOnlyViewState<Value> {
+public class ReadOnlyViewState<Value>: _AnyViewState {
 
     typealias RegisterViewStateObservationProvider = (ViewStateObservation) -> Void
 
@@ -118,7 +118,26 @@ public class ReadOnlyViewState<Value> {
         self.registerViewStateObservationProvider = registerViewStateObservationProvider
     }
 
+    @available(*, deprecated, message: "Use addViewStateObservation instead.")
     func registerViewStateObservation(_ observation: ViewStateObservation) {
+        registerViewStateObservationProvider(observation)
+    }
+
+    public func addViewStateObservation<T: UIView>(identifier: AnyHashable?, withView view: T, handler: @escaping (T, ReadOnlyViewState<Value>) -> Void) {
+        let observation = ViewStateObservation(identifier: identifier, updateHandler: { [weak view, weak self] in
+            guard let view, let self else { return false }
+            handler(view, self)
+            return true
+        })
+        registerViewStateObservationProvider(observation)
+    }
+
+    public func addViewStateObservation<T: UIView>(identifier: AnyHashable?, withView view: T, keyPath: ReferenceWritableKeyPath<T, Value>) {
+        let observation = ViewStateObservation(identifier: identifier, updateHandler: { [weak view, weak self] in
+            guard let view, let self else { return false }
+            view[keyPath: keyPath] = self.value
+            return true
+        })
         registerViewStateObservationProvider(observation)
     }
 }
@@ -164,7 +183,12 @@ public extension ReadOnlyViewState where Value: _Optionable {
 
 // MARK: - AnyViewState
 
-protocol AnyViewState: AnyObject {
+protocol AnyViewState: _AnyViewState {
 
     var host: ViewStateHosting? { get set }
+}
+
+
+public protocol _AnyViewState: AnyObject {
+
 }

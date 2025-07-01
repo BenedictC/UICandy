@@ -21,7 +21,7 @@ public struct BindingOption: OptionSet {
 
 public extension SomeControl {
 
-    func bind<T>(_ viewState: ViewState<T>, to keyPath: ReferenceWritableKeyPath<Self, T>, options: BindingOption = .default) -> Self {
+    func update<T>(_ keyPath: ReferenceWritableKeyPath<Self, T>, from viewState: ViewState<T>, options: BindingOption = .default) -> Self {
         let eventObserver = ControlEventObserver()
         eventObserver.updateStateHandler = { [weak viewState, unowned self] in
             let value = self[keyPath: keyPath]
