@@ -20,7 +20,14 @@ public final class Carousel: UIView {
     public let itemWidth: CGFloat?
     public let inset: CGFloat
     public let alignment: HStack.Alignment
-    public private(set) var selectedItemIndex: Int?
+    public private(set) var selectedItemIndex: Int? {
+        didSet {
+            let didChange = selectedItemIndex != oldValue
+            if didChange {
+                delegate?.carousel(self, didChangeSelectedItemIndex: selectedItemIndex)
+            }
+        }
+    }
     public var selectedItem: UIView? { selectedItemIndex.flatMap { items[$0] } }
 
 
@@ -69,14 +76,23 @@ public final class Carousel: UIView {
         updateItemsStack()
 
         self.scrollView.touchesDidEndHandler = { [weak self] in
-            self?.setSelectedItemIndexFromCurrentItem(alwaysSend: true)
+            self?.setSelectedItemIndexFromCurrentItem()
         }
     }
-
 
     @available(*, unavailable)
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+
+    // MARK: Accessors
+
+    public func setSelectedItemIndex(_ itemIndex: Int?, animated: Bool) {
+        let isChange = selectedItemIndex != itemIndex
+        guard isChange else { return }
+        self.selectedItemIndex = itemIndex
+        setContentOffsetToShowItem(at: itemIndex, animated: animated)
     }
 
 
@@ -102,26 +118,11 @@ public final class Carousel: UIView {
                 }
             )
         }
-
-        adjustScrollViewContentInset()
-    }
-
-    func setIndexIfValid(_ index: Int) {
-        "TODO: Hook this in to self.selectedItemIndex.set"
-        "TODO: Call the delegate when self.selectedItemIndex changes except when triggered by the setter"
-//        let isIndexValid = index > -1 && index < items.count
-//        if isIndexValid {
-//            self?.selectedItemIndex = index
-//            if let scrollView = self?.scrollView, !scrollView.isTracking {
-//                self?.setContentOffsetToShowItem(at: index, animated: true)
-//            }
-//        }
     }
 
     public override func layoutSubviews() {
         super.layoutSubviews()
         setContentOffsetToShowItem(at: selectedItemIndex, animated: false)
-        adjustScrollViewContentInset()
     }
 
 
@@ -169,7 +170,12 @@ private extension Carousel {
         scrollView.layoutIfNeeded()
         let item = items[itemIndex]
         let paddedItem = item.superview ?? item // Default should never be needed
-        let offset = paddedItem.convert(paddedItem.bounds.origin, to: scrollView)
+        let unboundOffset = paddedItem.convert(paddedItem.bounds.origin, to: scrollView)
+        let maxOffset = maxOffset()
+        let offset = CGPoint(
+            x: min(unboundOffset.x, maxOffset.x),
+            y: unboundOffset.y
+        )
         scrollView.setContentOffset(offset, animated: animated)
     }
 
@@ -186,21 +192,29 @@ private extension Carousel {
         return nil
     }
 
-    func setSelectedItemIndexFromCurrentItem(alwaysSend: Bool = false) {
-        "TODO: "
-//        guard let selectedItemIndexSubject else {
-//            return
-//        }
-//        if let itemIndex = indexOfCurrentItem() {
-//            let hasChanged = selectedItemIndex != itemIndex
-//            if hasChanged || alwaysSend {
-//                selectedItemIndexSubject.send(itemIndex)
-//            }
-//        }
+    func setSelectedItemIndexFromCurrentItem() {
+        if let itemIndex = indexOfCurrentItem() {
+            let hasChanged = selectedItemIndex != itemIndex
+            if hasChanged {
+                selectedItemIndex = itemIndex
+            }
+        }
     }
 
-    func adjustScrollViewContentInset() {
-        // TODO: adjust inset so that the last page doesn't have trailing whitespace
+    func maxOffset() -> CGPoint {
+        let defaultPoint = CGPoint(x: CGFloat.greatestFiniteMagnitude, y: 0)
+        "return defaultPoint"
+        guard let lastItem = items.last else { return defaultPoint }
+        let lastItemFrame = scrollView.convert(lastItem.bounds, from: lastItem)
+        let maxContentPoint = CGPoint(
+            x: lastItemFrame.maxX + spacing,
+            y: lastItemFrame.minY
+        )
+        let distanceBetweenOffsetAndRightEdge = self.bounds.width - (inset + spacing)
+        let unquantizedMaxOffsetX = maxContentPoint.x - distanceBetweenOffsetAndRightEdge
+        let itemOrigins = items.map { scrollView.convert($0.bounds.origin, from: $0) }
+        let maxOffset = itemOrigins.last { $0.x <= unquantizedMaxOffsetX }
+        return maxOffset ?? defaultPoint
     }
 }
 

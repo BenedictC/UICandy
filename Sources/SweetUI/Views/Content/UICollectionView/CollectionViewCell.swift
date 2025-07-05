@@ -14,7 +14,7 @@ open class _CollectionViewCell: UICollectionViewCell, ReuseIdentifiable {
 
     // MARK: Properties
 
-    public lazy var viewStateObservations = [ViewStateObservation]()
+    //public lazy var viewStateObservations = [ViewStateObservation]()
 
     public var bodyContainer: UIView { contentView }
 
@@ -24,27 +24,12 @@ open class _CollectionViewCell: UICollectionViewCell, ReuseIdentifiable {
     required public override init(frame: CGRect) {
         super.init(frame: frame)
         Self.initializeBodyHosting(of: self)
-        (self as? ViewStateHosting)?.initializeViewStateObserving()
+        (self as? ViewStateHosting)?.initializeViewStateHosting()
     }
 
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    @available(iOS 14.0, *)
-    override open func updateConfiguration(using state: UICellConfigurationState) {
-        (self as? ViewStateHosting)?.performViewStateObservationUpdates()
-        super.updateConfiguration(using: state)
-    }
-
-    override open func layoutSubviews() {
-        if #available(iOS 14.0, *) {
-            // do nothing, handled by updateConfiguration(using:)
-        } else {
-            (self as? ViewStateHosting)?.performViewStateObservationUpdates()
-        }
-        super.layoutSubviews()
     }
 }
 

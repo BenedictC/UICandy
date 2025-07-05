@@ -1,12 +1,9 @@
 
 public protocol ViewStateHosting: AnyObject {
 
-    var viewStateObservations: [ViewStateObservation] { get set }
+    func initializeViewStateHosting()
 
-    func initializeViewStateObserving()
-    func registerViewStateObservation(_ update: ViewStateObservation)
     func setViewStateDidChange()
-    func performViewStateObservationUpdates()
 }
 
 
@@ -14,27 +11,13 @@ public protocol ViewStateHosting: AnyObject {
 
 public extension ViewStateHosting {
 
-    func initializeViewStateObserving() {
+    func initializeViewStateHosting() {
         let mirror = Mirror(reflecting: self)
         for child in mirror.children {
-            if let viewState = child.value as? AnyViewState {
-                viewState.host = self
+            if let viewState = child.value as? BaseViewState {
+                viewState.addHost(self)
             }
         }
-    }
-
-    func registerViewStateObservation(_ update: ViewStateObservation) {
-        viewStateObservations.append(update)
-    }
-
-    func performViewStateObservationUpdates() {
-        var fresh = [ViewStateObservation]()
-        for update in viewStateObservations {
-            if update.performUpdate() {
-                fresh.append(update)
-            }
-        }
-        viewStateObservations = fresh
     }
 }
 

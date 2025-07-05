@@ -1,6 +1,4 @@
 import Foundation
-import Combine
-import UIKit
 
 
 // MARK: - View
@@ -19,8 +17,6 @@ extension UIControl.Event {
 open class _Control: UIControl {
 
     // MARK: Properties
-
-    public lazy var viewStateObservations = [ViewStateObservation]()
 
     /// Value used to notify of state changes via sendAction. Change this value if the default conflicts with an existing application value
     // The following values are available for application use: 1 << 24, 1 << 25, 1 << 26, and 1 << 27
@@ -49,7 +45,7 @@ open class _Control: UIControl {
     public init() {
         super.init(frame: .zero)
         UIView.initializeBodyHosting(of: self)
-        (self as? ViewStateHosting)?.initializeViewStateObserving()
+        (self as? ViewStateHosting)?.initializeViewStateHosting()
     }
 
     @available(*, unavailable)
@@ -81,14 +77,6 @@ open class _Control: UIControl {
 
     private func notifyOfStateChange() {
         sendActions(for: Self.stateDidChangeEvent)
-    }
-
-
-    // MARK: Layout
-
-    open override func layoutSubviews() {
-        (self as? ViewStateHosting)?.performViewStateObservationUpdates()
-        super.layoutSubviews()
     }
 }
 
