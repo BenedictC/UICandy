@@ -34,9 +34,6 @@ open class _ViewController: UIViewController {
 
     // MARK: Properties
 
-    public lazy var viewStateObservations = [ViewStateObservation]()
-
-
     private let retainCycleAdvice =
     """
     Check that closures within the view that reference the view controller are weak, e.g.:
@@ -86,11 +83,6 @@ open class _ViewController: UIViewController {
             self.view.backgroundColor = .systemBackground
         }
 
-        (self as? ViewStateHosting)?.initializeViewStateObserving()
-    }
-
-    override open func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        (self as? ViewStateHosting)?.performViewStateObservationUpdates()
+        (self as? ViewStateHosting)?.initializeViewStateHosting()
     }
 }

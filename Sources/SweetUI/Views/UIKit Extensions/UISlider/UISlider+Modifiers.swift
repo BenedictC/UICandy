@@ -72,9 +72,7 @@ public extension SomeView where Self: UISlider {
 
     @available(iOS 14.0, *)
     func withValueSnappedToIncrements(of increment: Float, handler: @escaping (Self, Float) -> Void) -> Self {
-        self.onEvent(.valueChanged, perform: UIAction { action in
-            guard let slider = action.sender as? Self else { return }
-
+        self.onEvent(.valueChanged, perform: { slider in
             let initialValue = slider.value
             let unroundedOffset = initialValue - slider.minimumValue
             let remainder = unroundedOffset.remainder(dividingBy: increment)

@@ -11,7 +11,7 @@ open class _View: UIView {
 
     // MARK: Properties
 
-    public lazy var viewStateObservations = [ViewStateObservation]()
+    //public lazy var viewStateObservations = [ViewStateObservation]()
 
 
     // MARK: Instance life cycle
@@ -19,17 +19,12 @@ open class _View: UIView {
     public init() {
         super.init(frame: .zero)
         Self.initializeBodyHosting(of: self)
-        (self as? ViewStateHosting)?.initializeViewStateObserving()
+        (self as? ViewStateHosting)?.initializeViewStateHosting()
     }
 
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    open override func layoutSubviews() {
-        (self as? ViewStateHosting)?.performViewStateObservationUpdates()
-        super.layoutSubviews()
     }
 }
 

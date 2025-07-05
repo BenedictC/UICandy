@@ -1,31 +1,6 @@
 import UIKit
 
 
-// MARK: - Actions
-
-public extension UIControl {
-
-    func onEvent(_ event: UIControl.Event, send action: Selector, to target: Any? = nil) -> Self {
-        self.addTarget(target, action: action, for: event)
-        return self
-    }
-
-    @available(iOS 14.0, *)
-    func onEvent(_ event: UIControl.Event, perform action: UIAction) -> Self {
-        self.addAction(action, for: event)
-        return self
-    }
-
-    @available(iOS 14.0, *)
-    @discardableResult
-    func onEvent(_ event: UIControl.Event, perform handler: @escaping UIActionHandler) -> Self {
-        let action = UIAction(handler: handler)
-        self.addAction(action, for: event)
-        return self
-    }
-}
-
-
 // MARK: - Modifiers
 
 public extension UIControl {

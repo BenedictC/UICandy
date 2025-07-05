@@ -5,8 +5,8 @@ public struct ArrayBuilder<Element> {
         [expression].compactMap { $0 }
     }
 
-    public static func buildExpression(_ expression: [Element]) -> [Element] {
-        expression
+    public static func buildExpression(_ expression: [Element]?) -> [Element] {
+        (expression ?? [])
     }
 
     public static func buildBlock(_ components: [Element]...) -> [Element] {
