@@ -14,18 +14,50 @@ public extension ListLayout {
         indexElementsProvider: DiffableDataSource.IndexElementsProvider? = nil,
         reorderHandlers: DiffableDataSource.ReorderingHandlers? = nil,
         sectionSnapshotHandlers: DiffableDataSource.SectionSnapshotHandlers<ItemIdentifier>? = nil,
+        background: LayoutBackground? = nil,
         header: LayoutHeader? = nil,
         footer: LayoutFooter? = nil,
+        @ArrayBuilder<ListSectionWithStandardHeader>
+        sectionsWithStandardHeader sections: () -> [ListSectionWithStandardHeader]
+    ) {
+        let boundarySupplements = [
+            header?.asBoundarySupplement(),
+            footer?.asBoundarySupplement()
+        ].compactMap { $0 }
+
+        let anySections = sections().map { $0.eraseToAnyListSection() }
+        let components = ListLayoutComponents<SectionIdentifier, ItemIdentifier>(
+            configuration: configuration,
+            background: background,
+            boundarySupplements: boundarySupplements,
+            sections: anySections
+        )
+        let behaviors = CollectionViewLayoutBehaviors(
+            indexElementsProvider: indexElementsProvider,
+            reorderHandlers: reorderHandlers,
+            sectionSnapshotHandlers: sectionSnapshotHandlers
+        )
+
+        self.init(appearance: appearance, components: components, behaviors: behaviors)
+    }
+
+    init(
+        appearance: UICollectionLayoutListConfiguration.Appearance,
+        configuration: LayoutConfiguration = LayoutConfiguration(builder: { _ in }),
+        indexElementsProvider: DiffableDataSource.IndexElementsProvider? = nil,
+        reorderHandlers: DiffableDataSource.ReorderingHandlers? = nil,
+        sectionSnapshotHandlers: DiffableDataSource.SectionSnapshotHandlers<ItemIdentifier>? = nil,
         background: LayoutBackground? = nil,
+        @ArrayBuilder<LayoutBoundarySupplement>
+        boundarySupplements: () -> [LayoutBoundarySupplement],
         @ArrayBuilder<ListSectionWithStandardHeader>
         sectionsWithStandardHeader sections: () -> [ListSectionWithStandardHeader]
     ) {
         let anySections = sections().map { $0.eraseToAnyListSection() }
         let components = ListLayoutComponents<SectionIdentifier, ItemIdentifier>(
             configuration: configuration,
-            header: header,
-            footer: footer,
             background: background,
+            boundarySupplements: boundarySupplements(),
             sections: anySections
         )
         let behaviors = CollectionViewLayoutBehaviors(

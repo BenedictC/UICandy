@@ -32,8 +32,9 @@ public struct ListLayout<SectionIdentifier: Hashable, ItemIdentifier: Hashable>:
         if let background = self.components.background {
             collectionView.backgroundView = background.view
         }
-        components.header?.registerReusableViews(in: collectionView)
-        components.footer?.registerReusableViews(in: collectionView)
+        for boundarySupplement in components.boundarySupplements {
+            boundarySupplement.registerReusableViews(in: collectionView)
+        }
         for section in components.sections {
             section.registerViews(in: collectionView)
         }
@@ -70,14 +71,10 @@ public struct ListLayout<SectionIdentifier: Hashable, ItemIdentifier: Hashable>:
         if hasFooter {
             finalListConfiguration.footerMode = .supplementary
         }
-        // ## Layout header/footer
-        if let header = components.header {
-            let headerItem = header.makeLayoutBoundarySupplementaryItem()
-            compositionalConfiguration.boundarySupplementaryItems += [headerItem]
-        }
-        if let footer = components.footer {
-            let footerItem = footer.makeLayoutBoundarySupplementaryItem()
-            compositionalConfiguration.boundarySupplementaryItems += [footerItem]
+        // ## Layout BoundarySupplements
+        for boundarySupplement in components.boundarySupplements {
+            let item = boundarySupplement.makeLayoutBoundarySupplementaryItem()
+            compositionalConfiguration.boundarySupplementaryItems += [item]
         }
 
         // # Configure the layout (finally!)
@@ -112,21 +109,11 @@ public struct ListLayout<SectionIdentifier: Hashable, ItemIdentifier: Hashable>:
 
     public func makeSupplementaryView(ofKind elementKind: String, for collectionView: UICollectionView, at indexPath: IndexPath, dataSource: UICollectionViewDiffableDataSource<SectionIdentifier, ItemIdentifier>) -> UICollectionReusableView {
         // # Layout supplementary views
-        if let header = components.header,
-           elementKind == header.elementKind {
-           let headerView = header.makeSupplementaryView(ofKind: elementKind, for: collectionView, indexPath: indexPath, value: ())
-           guard let headerView else {
-               preconditionFailure("Failed to create header")
-           }
-           return headerView
-        }
-        if let footer = components.footer,
-           elementKind == footer.elementKind {
-           let footerView = footer.makeSupplementaryView(ofKind: elementKind, for: collectionView, indexPath: indexPath, value: ())
-           guard let footerView else {
-               preconditionFailure("Failed to create footer")
-           }
-           return footerView
+        for boundarySupplement in components.boundarySupplements {
+            let supplementView = boundarySupplement.makeSupplementaryView(ofKind: elementKind, for: collectionView, value: (), at: indexPath)
+            if let supplementView {
+                return supplementView
+            }
         }
 
         // # Section supplementary views
@@ -154,9 +141,8 @@ public struct ListLayout<SectionIdentifier: Hashable, ItemIdentifier: Hashable>:
 public struct ListLayoutComponents<SectionIdentifier: Hashable, ItemIdentifier: Hashable> {
 
     let configuration: LayoutConfiguration?
-    let header: LayoutHeader?
-    let footer: LayoutFooter?
     let background: LayoutBackground?
+    let boundarySupplements: [LayoutBoundarySupplement]
     let sections: [AnyListSection<SectionIdentifier, ItemIdentifier>]
 }
 
