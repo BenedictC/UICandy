@@ -100,15 +100,29 @@ public class ReadOnlyViewState<Value>: BaseViewState {
 
 public class BaseViewState {
 
-    struct HostWrapper {
+    private struct HostWrapper: Hashable {
+        
         weak var host: ViewStateHosting?
+
+        static func ==(lhs: HostWrapper, rhs: HostWrapper) -> Bool {
+            lhs.host === rhs.host
+        }
+
+        func hash(into hasher: inout Hasher) {
+            guard let host else {
+                hasher.combine(0)
+                return
+            }
+            let id = ObjectIdentifier(host)
+            hasher.combine(id)
+        }
     }
 
-    private var hostWrappers = [HostWrapper]()
+    private var hostWrappers = Set<HostWrapper>()
 
     public func addHost(_ host: ViewStateHosting) {
         let wrapper = HostWrapper(host: host)
-        hostWrappers.append(wrapper)
+        hostWrappers.insert(wrapper)
     }
 
     public func removeHost(_ host: ViewStateHosting) {
