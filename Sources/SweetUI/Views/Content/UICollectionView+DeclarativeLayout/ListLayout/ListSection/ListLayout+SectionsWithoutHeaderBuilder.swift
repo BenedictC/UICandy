@@ -14,17 +14,21 @@ public extension ListLayout {
         indexElementsProvider: DiffableDataSource.IndexElementsProvider? = nil,
         reorderHandlers: DiffableDataSource.ReorderingHandlers? = nil,
         sectionSnapshotHandlers: DiffableDataSource.SectionSnapshotHandlers<ItemIdentifier>? = nil,
+        background: LayoutBackground? = nil,
         header: LayoutHeader? = nil,
         footer: LayoutFooter? = nil,
-        background: LayoutBackground? = nil,
         @ArrayBuilder<ListSectionWithoutHeader>
         sectionsWithoutHeader sections: () -> [ListSectionWithoutHeader]
     ) {
+        let boundarySupplements = [
+            header?.asBoundarySupplement(),
+            footer?.asBoundarySupplement()
+        ].compactMap { $0 }
+
         let components = ListLayoutComponents(
             configuration: configuration,
-            header: header,
-            footer: footer,
             background: background,
+            boundarySupplements: boundarySupplements,
             sections: sections().map { $0.eraseToAnyListSection() }
         )
         let behaviors = CollectionViewLayoutBehaviors(
@@ -41,19 +45,17 @@ public extension ListLayout {
         indexElementsProvider: DiffableDataSource.IndexElementsProvider? = nil,
         reorderHandlers: DiffableDataSource.ReorderingHandlers? = nil,
         sectionSnapshotHandlers: DiffableDataSource.SectionSnapshotHandlers<ItemIdentifier>? = nil,
-        header: LayoutHeader? = nil,
-        footer: LayoutFooter? = nil,
         background: LayoutBackground? = nil,
-        @ArrayBuilder<ListCell<ItemIdentifier>>
-        cells: () -> [ListCell<ItemIdentifier>]
+        @ArrayBuilder<LayoutBoundarySupplement>
+        boundarySupplements: () -> [LayoutBoundarySupplement],
+        @ArrayBuilder<ListSectionWithoutHeader>
+        sectionsWithoutHeader sections: () -> [ListSectionWithoutHeader]
     ) {
-        let section = ListSectionWithoutHeader(cells: cells()).eraseToAnyListSection()
         let components = ListLayoutComponents(
             configuration: configuration,
-            header: header,
-            footer: footer,
             background: background,
-            sections: [section]
+            boundarySupplements: boundarySupplements(),
+            sections: sections().map { $0.eraseToAnyListSection() }
         )
         let behaviors = CollectionViewLayoutBehaviors(
             indexElementsProvider: indexElementsProvider,

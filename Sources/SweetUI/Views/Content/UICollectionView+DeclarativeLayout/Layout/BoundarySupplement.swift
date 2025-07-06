@@ -107,7 +107,7 @@ public extension BoundarySupplement {
     ) where ViewType.Item == Value {
         let elementKind = UniqueIdentifier("\(Self.self) elementKind").value
         let reuseIdentifier = UniqueIdentifier("\(Self.self) reuseIdentifier").value
-        
+
         self.init(
             supplementRegistrar: { collectionView in
                 collectionView.register(ViewType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
@@ -174,3 +174,8 @@ public extension BoundarySupplement {
         )
     }
 }
+
+
+// MARK: - LayoutBoundarySupplement
+
+public typealias LayoutBoundarySupplement = BoundarySupplement<Void>
