@@ -122,8 +122,8 @@ public extension CompositeLayout {
         reorderHandlers: DiffableDataSource.ReorderingHandlers? = nil,
         sectionSnapshotHandlers: DiffableDataSource.SectionSnapshotHandlers<ItemIdentifier>? = nil,
         background: LayoutBackground? = nil,
-        @ArrayBuilder<BoundarySupplement<Void>>
-        boundarySupplements: () -> [BoundarySupplement<Void>],
+        @ArrayBuilder<LayoutBoundarySupplement>
+        boundarySupplements: () -> [LayoutBoundarySupplement],
         @ArrayBuilder<CompositeSection<SectionIdentifier, ItemIdentifier>>
         sections: () -> [CompositeSection<SectionIdentifier, ItemIdentifier>]
     ) {
