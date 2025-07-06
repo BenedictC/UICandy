@@ -1,4 +1,5 @@
 import os.log
+import Foundation
 
 
 // MARK: - print override

@@ -1,6 +1,3 @@
-import Foundation
-
-
 struct UniqueIdentifier: Hashable {
 
     static private var count = 0
