@@ -34,6 +34,9 @@ open class _ViewController: UIViewController {
 
     // MARK: Properties
 
+    private lazy var onUpdatePropertiesHandlers = Set<OnUpdatePropertiesHandler>()
+
+
     private let retainCycleAdvice =
     """
     Check that closures within the view that reference the view controller are weak, e.g.:
@@ -84,5 +87,28 @@ open class _ViewController: UIViewController {
         }
 
         (self as? ViewStateHosting)?.initializeViewStateHosting()
+    }
+
+
+    // MARK: View State
+
+    public func addOnUpdatePropertiesHandler(withIdentifier identifier: AnyHashable?, action: @escaping () -> Void) {
+        let handler = OnUpdatePropertiesHandler(identifier: identifier, handler: action)
+        onUpdatePropertiesHandlers.insert(handler)
+    }
+
+    public func removeOnUpdatePropertiesHandler(withIdentifier identifier: AnyHashable) {
+        onUpdatePropertiesHandlers = onUpdatePropertiesHandlers.filter { $0.identifier != identifier }
+    }
+
+
+    // MARK: Layout
+
+    override open func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        // TODO: Add iOS 26 support
+        for handler in onUpdatePropertiesHandlers {
+            handler.execute()
+        }
     }
 }
