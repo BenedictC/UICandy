@@ -203,18 +203,19 @@ private extension Carousel {
 
     func maxOffset() -> CGPoint {
         let defaultPoint = CGPoint(x: CGFloat.greatestFiniteMagnitude, y: 0)
-        "return defaultPoint"
-        guard let lastItem = items.last else { return defaultPoint }
-        let lastItemFrame = scrollView.convert(lastItem.bounds, from: lastItem)
-        let maxContentPoint = CGPoint(
-            x: lastItemFrame.maxX + spacing,
-            y: lastItemFrame.minY
-        )
-        let distanceBetweenOffsetAndRightEdge = self.bounds.width - (inset + spacing)
-        let unquantizedMaxOffsetX = maxContentPoint.x - distanceBetweenOffsetAndRightEdge
-        let itemOrigins = items.map { scrollView.convert($0.bounds.origin, from: $0) }
-        let maxOffset = itemOrigins.last { $0.x <= unquantizedMaxOffsetX }
-        return maxOffset ?? defaultPoint
+        return defaultPoint
+        // TODO: Implement this so it returns the paging point where the last element is fully visible
+//        guard let lastItem = items.last else { return defaultPoint }
+//        let lastItemFrame = scrollView.convert(lastItem.bounds, from: lastItem)
+//        let maxContentPoint = CGPoint(
+//            x: lastItemFrame.maxX + spacing,
+//            y: lastItemFrame.minY
+//        )
+//        let distanceBetweenOffsetAndRightEdge = self.bounds.width - (inset + spacing)
+//        let unquantizedMaxOffsetX = maxContentPoint.x - distanceBetweenOffsetAndRightEdge
+//        let itemOrigins = items.map { scrollView.convert($0.bounds.origin, from: $0) }
+//        let maxOffset = itemOrigins.last { $0.x <= unquantizedMaxOffsetX }
+//        return maxOffset ?? defaultPoint
     }
 }
 
