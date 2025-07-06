@@ -1,3 +1,4 @@
+import UIKit
 
 
 public struct LayoutHeader {
@@ -95,7 +96,7 @@ public extension LayoutHeader {
         typealias ViewType = StaticContentReusableCollectionView<Content>
         let elementKind = Self.elementKind
         let reuseIdentifier = UniqueIdentifier("\(Self.self) reuseIdentifier").value
-        
+
         self.supplementRegistrar = { collectionView in
             collectionView.register(ViewType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
         }
