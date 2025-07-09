@@ -22,25 +22,33 @@ public final class DefaultTabBarControllerDelegate: NSObject, UITabBarController
     public static let shared = DefaultTabBarControllerDelegate()
 
     public func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        guard
-            // If tab is already selected...
-            tabBarController.selectedViewController == viewController,
-            // ... And it is a flow controller with a nav as the container ..
-            let flowController = viewController as? _FlowController,
-            let nestedNav = flowController.children.first as? UINavigationController
-        else {
-            return true
+        let isAlreadySelected = tabBarController.selectedViewController == viewController
+        if isAlreadySelected {
+            attemptToPopToRoot(ofFlow: viewController)
         }
-        // ... then pop to root
-        nestedNav.popToRootViewController(animated: true)
         return true
     }
 
     public func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         fixTruncatedChildFrameCausedByNonTranslucentTabBar(in: tabBarController)
     }
+}
 
-    private func fixTruncatedChildFrameCausedByNonTranslucentTabBar(in tabBarController: UITabBarController) {
+private extension DefaultTabBarControllerDelegate {
+
+    @discardableResult
+    func attemptToPopToRoot(ofFlow viewController: UIViewController) -> Bool {
+        guard let flowController = viewController as? _FlowController,
+              let nestedNavController = flowController.children.first as? UINavigationController
+        else {
+            return false
+        }
+        // TODO: Should we add `if isAtRoot { scrollRootVCToTop() }` ???
+        nestedNavController.popToRootViewController(animated: true)
+        return true
+    }
+
+    func fixTruncatedChildFrameCausedByNonTranslucentTabBar(in tabBarController: UITabBarController) {
         guard !tabBarController.tabBar.isTranslucent else {
             return
         }
