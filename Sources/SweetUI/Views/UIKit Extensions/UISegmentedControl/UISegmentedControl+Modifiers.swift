@@ -4,10 +4,17 @@ import UIKit
 public extension UISegmentedControl {
 
 
-//    open var isMomentary: Bool
-//    open var apportionsSegmentWidthsByContent: Bool
-//
-//
+    func momentary(_ value: Bool) -> Self {
+        isMomentary = value
+        return self
+    }
+
+    func apportionsSegmentWidthsByContent(_ value: Bool) -> Self {
+        apportionsSegmentWidthsByContent = value
+        return self
+    }
+
+
 //    open func insertSegment(withTitle title: String?, at segment: Int, animated: Bool) // insert before segment number. 0..#segments. value pinned
 //
 //    open func insertSegment(with image: UIImage?, at segment: Int, animated: Bool)
