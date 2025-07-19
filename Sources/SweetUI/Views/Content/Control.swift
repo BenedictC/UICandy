@@ -45,8 +45,6 @@ open class _Control: UIControl {
         set { super.isHidden = newValue; notifyOfStateChange() }
     }
 
-    private lazy var onUpdatePropertiesHandlers = Set<OnUpdatePropertiesHandler>()
-
 
     // MARK: Instance life cycle
 
@@ -108,29 +106,6 @@ open class _Control: UIControl {
             let shouldUseSubview = isControl || hasEnabledRecognizers
             return shouldUseSubview ? subview : nil
         }
-    }
-
-
-    // MARK: View State
-
-    public func addOnUpdatePropertiesHandler(withIdentifier identifier: AnyHashable?, action: @escaping () -> Void) {
-        let handler = OnUpdatePropertiesHandler(identifier: identifier, handler: action)
-        onUpdatePropertiesHandlers.insert(handler)
-    }
-
-    public func removeOnUpdatePropertiesHandler(withIdentifier identifier: AnyHashable) {
-        onUpdatePropertiesHandlers = onUpdatePropertiesHandlers.filter { $0.identifier != identifier }
-    }
-
-
-    // MARK: Layout
-
-    override open func layoutSubviews() {
-        // TODO: Add iOS 26 support
-        for handler in onUpdatePropertiesHandlers {
-            handler.execute()
-        }
-        super.layoutSubviews()
     }
 
     
