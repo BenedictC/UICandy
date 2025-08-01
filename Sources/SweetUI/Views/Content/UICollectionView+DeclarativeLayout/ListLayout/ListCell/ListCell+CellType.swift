@@ -4,9 +4,37 @@ import UIKit
 @available(iOS 15, *)
 public extension ListCell {
 
+    init<CellType: UICollectionViewCell & ItemRepresentable>(
+        cellType: CellType.Type = CellType.self,
+        configuration: @escaping (CellType) -> Void = { _ in }
+    ) where CellType.Item == ItemIdentifier {
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
+        self = ListCell(
+            cellRegistrar: { collectionView in
+                collectionView.register(CellType.self, forCellWithReuseIdentifier: reuseIdentifier)
+            },
+            cellProvider: { collectionView, indexPath, value in
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! CellType
+                configuration(cell)
+                cell.configurationUpdateHandler = { cell, _ in
+                    guard let cell = cell as? CellType else {
+                        return
+                    }
+                    cell.item = value
+                }
+                return cell
+            }
+        )
+    }
+}
+
+
+@available(iOS 15, *)
+public extension ListCell {
+
     init<CellType: UICollectionViewCell>(
         cellType: CellType.Type = CellType.self,
-        configuration: @escaping (CellType, UICellConfigurationState, ItemIdentifier) -> Void = { _, _, _ in }
+        configuration: @escaping (CellType, UICellConfigurationState, ItemIdentifier) -> Void
     ) {
         let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
 
@@ -21,35 +49,6 @@ public extension ListCell {
                         return
                     }
                     configuration(cell, state, value)
-                }
-                return cell
-            }
-        )
-    }
-}
-
-
-@available(iOS 15, *)
-public extension ListCell {
-
-    init<CellType: UICollectionViewCell & ItemRepresentable>(
-        cellType: CellType.Type = CellType.self,
-        configuration: @escaping (CellType) -> Void = { _ in }
-    ) where CellType.Item == ItemIdentifier {
-        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
-        
-        self = ListCell(
-            cellRegistrar: { collectionView in
-                collectionView.register(CellType.self, forCellWithReuseIdentifier: reuseIdentifier)
-            },
-            cellProvider: { collectionView, indexPath, value in
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! CellType
-                configuration(cell)
-                cell.configurationUpdateHandler = { cell, _ in
-                    guard let cell = cell as? CellType else {
-                        return
-                    }
-                    cell.item = value
                 }
                 return cell
             }
