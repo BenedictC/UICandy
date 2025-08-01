@@ -26,7 +26,7 @@ public struct Background: Decoration {
 public extension Background {
 
     init<T: UICollectionReusableView>(
-        viewClass: T.Type,
+        viewType: T.Type,
         elementKind optionalElementKind: String? = nil,
         zIndex: Int? = nil
     ) {

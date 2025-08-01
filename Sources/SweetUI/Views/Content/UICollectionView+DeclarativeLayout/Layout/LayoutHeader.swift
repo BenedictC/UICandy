@@ -68,7 +68,7 @@ public struct LayoutHeader {
 public extension LayoutHeader {
 
     init<T: UICollectionReusableView>(
-        ofType viewType: T.Type,
+        viewType: T.Type,
         configuration: @escaping (T) -> Void = { _ in }
     ) {
         let elementKind = Self.elementKind

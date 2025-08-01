@@ -60,7 +60,7 @@ public struct BoundarySupplement<Value> {
 public extension BoundarySupplement {
 
     init<ViewType: UICollectionReusableView>(
-        ofType viewType: ViewType.Type,
+        viewType: ViewType.Type,
         size: NSCollectionLayoutSize,
         containerAnchor: NSCollectionLayoutAnchor,
         itemAnchor: NSCollectionLayoutAnchor?,
@@ -97,7 +97,7 @@ public extension BoundarySupplement {
     }
 
     init<ViewType: CollectionReusableView>(
-        ofType viewType: ViewType.Type,
+        viewType: ViewType.Type,
         size: NSCollectionLayoutSize,
         containerAnchor: NSCollectionLayoutAnchor,
         itemAnchor: NSCollectionLayoutAnchor?,

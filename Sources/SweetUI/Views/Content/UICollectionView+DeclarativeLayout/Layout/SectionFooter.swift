@@ -68,8 +68,8 @@ public struct SectionFooter<SectionIdentifier> {
 public extension SectionFooter {
 
     init<T: UICollectionReusableView>(
-        ofType viewType: T.Type,
-        configuration: @escaping (T, SectionIdentifier) -> Void = { _, _ in }
+        viewType: T.Type,
+        configuration: @escaping (T, SectionIdentifier) -> Void
     ) {
         let elementKind = Self.elementKind
         let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
@@ -90,7 +90,10 @@ public extension SectionFooter {
         )
     }
 
-    init<T: CollectionReusableView>(ofType viewType: T.Type) where T.Item == SectionIdentifier {
+    init<T: CollectionReusableView>(
+        viewType: T.Type,
+        configuration: @escaping (T, SectionIdentifier) -> Void
+    ) where T.Item == SectionIdentifier {
         let elementKind = Self.elementKind
         let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
 
@@ -104,6 +107,7 @@ public extension SectionFooter {
                     withReuseIdentifier: reuseIdentifier,
                     for: indexPath
                 ) as! T
+                configuration(view)
                 view.item = sectionIdentifier
                 return view
             }
