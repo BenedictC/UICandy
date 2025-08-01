@@ -23,7 +23,6 @@ public final class CollectionViewSnapshotCoordinator<SectionIdentifier: Hashable
 
     // MARK: Properties
 
-    @Published
     public private(set) var snapshot: Snapshot
     public private(set) var pendingSnapshot: Snapshot?
     private weak var collectionView: UICollectionView?
