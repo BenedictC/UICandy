@@ -26,9 +26,15 @@ public extension ListCell {
             }
         )
     }
+}
+
+
+@available(iOS 15, *)
+public extension ListCell {
 
     init<CellType: UICollectionViewCell & ItemRepresentable>(
-        cellType: CellType.Type = CellType.self
+        cellType: CellType.Type = CellType.self,
+        configuration: @escaping (CellType) -> Void = { _ in }
     ) where CellType.Item == ItemIdentifier {
         let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
         
@@ -38,6 +44,7 @@ public extension ListCell {
             },
             cellProvider: { collectionView, indexPath, value in
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! CellType
+                configuration(cell)
                 cell.configurationUpdateHandler = { cell, _ in
                     guard let cell = cell as? CellType else {
                         return

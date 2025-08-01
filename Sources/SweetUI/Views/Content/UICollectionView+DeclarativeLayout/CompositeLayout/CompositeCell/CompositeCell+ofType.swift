@@ -4,7 +4,8 @@ import UIKit
 public extension CompositeCell {
 
     init<CellType: UICollectionViewCell & ItemRepresentable>(
-        cellType: CellType.Type = CellType.self
+        cellType: CellType.Type = CellType.self,
+        configuration: @escaping (CellType) -> Void = { _ in }
     ) where CellType.Item == ItemIdentifier {
         let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
         self = CompositeCell(
@@ -13,6 +14,7 @@ public extension CompositeCell {
             },
             cellProvider: { collectionView, indexPath, value in
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! CellType
+                configuration(cell)
                 cell.item = value
                 return cell
             }
