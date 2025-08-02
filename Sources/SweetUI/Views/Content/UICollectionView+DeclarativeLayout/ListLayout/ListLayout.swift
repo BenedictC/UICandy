@@ -6,7 +6,8 @@ import UIKit
 @available(iOS 15, *)
 public struct ListLayout<SectionIdentifier: Hashable, ItemIdentifier: Hashable>: CollectionViewLayoutStrategy {
 
-    private class EmptyFooter: CollectionReusableView {
+    private class EmptyFooter<T>: CollectionReusableView {
+        var item: T?
         let body = Spacer(height: 0)
     }
 
@@ -14,7 +15,7 @@ public struct ListLayout<SectionIdentifier: Hashable, ItemIdentifier: Hashable>:
     let components: ListLayoutComponents<SectionIdentifier, ItemIdentifier>
     public let behaviors: CollectionViewLayoutBehaviors<SectionIdentifier, ItemIdentifier>
 
-    private let emptyFooter = SectionFooter<SectionIdentifier>(ofType: EmptyFooter.self)
+    private let emptyFooter = SectionFooter<SectionIdentifier>(viewType: EmptyFooter<SectionIdentifier>.self)
 
 
     internal init(

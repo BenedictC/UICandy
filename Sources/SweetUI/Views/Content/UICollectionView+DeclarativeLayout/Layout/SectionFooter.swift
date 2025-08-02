@@ -67,6 +67,30 @@ public struct SectionFooter<SectionIdentifier> {
 
 public extension SectionFooter {
 
+    init<T: CollectionReusableView>(
+        viewType: T.Type,
+        configuration: @escaping (T) -> Void = { _ in }
+    ) where T.Item == SectionIdentifier {
+        let elementKind = Self.elementKind
+        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
+
+        self.init(
+            supplementRegistrar: { collectionView in
+                collectionView.register(viewType, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
+            },
+            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifier in
+                let view = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: elementKind,
+                    withReuseIdentifier: reuseIdentifier,
+                    for: indexPath
+                ) as! T
+                configuration(view)
+                view.item = sectionIdentifier
+                return view
+            }
+        )
+    }
+
     init<T: UICollectionReusableView>(
         viewType: T.Type,
         configuration: @escaping (T, SectionIdentifier) -> Void
@@ -90,29 +114,6 @@ public extension SectionFooter {
         )
     }
 
-    init<T: CollectionReusableView>(
-        viewType: T.Type,
-        configuration: @escaping (T, SectionIdentifier) -> Void
-    ) where T.Item == SectionIdentifier {
-        let elementKind = Self.elementKind
-        let reuseIdentifier = UniqueIdentifier("\(Self.self)").value
-
-        self.init(
-            supplementRegistrar: { collectionView in
-                collectionView.register(viewType, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
-            },
-            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifier in
-                let view = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: elementKind,
-                    withReuseIdentifier: reuseIdentifier,
-                    for: indexPath
-                ) as! T
-                configuration(view)
-                view.item = sectionIdentifier
-                return view
-            }
-        )
-    }
 
     init<T: UIView>(content: @escaping () -> T) {
         typealias ViewType = StaticContentReusableCollectionView<T>
