@@ -97,3 +97,34 @@ public class BaseViewState {
         }
     }
 }
+
+
+// MARK: - Observation
+
+private class ViewStateObservation: NSObject, ViewStateHosting {
+
+    var handler: (() -> Void)?
+
+    func viewStateDidChange() {
+        handler?()
+    }
+}
+
+
+public extension ViewState {
+
+    func observe(withHandler handler: @escaping (Value) -> Void) -> NSObjectProtocol {
+        // Create observation
+        let observation = ViewStateObservation()
+        observation.handler = { [weak self] in
+            guard let self else { return }
+            handler(self.value)
+        }
+        self.addHost(observation)
+
+        // Fire initial value
+        handler(value)
+
+        return observation
+    }
+}
