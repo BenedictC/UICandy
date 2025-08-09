@@ -101,21 +101,11 @@ public class BaseViewState {
 
 // MARK: - Observation
 
-private class ViewStateObservation: NSObject, ViewStateHosting {
-
-    var handler: (() -> Void)?
-
-    func viewStateDidChange() {
-        handler?()
-    }
-}
-
-
 public extension ViewState {
 
-    func observe(withHandler handler: @escaping (Value) -> Void) -> NSObjectProtocol {
+    func observe(withHandler handler: @escaping (Value) -> Void) -> ViewStateObservation {
         // Create observation
-        let observation = ViewStateObservation()
+        let observation = ConcreteViewStateObservation()
         observation.handler = { [weak self] in
             guard let self else { return }
             handler(self.value)
@@ -126,5 +116,54 @@ public extension ViewState {
         handler(value)
 
         return observation
+    }
+}
+
+
+public class ViewStateObservation: Hashable {
+
+    public func cancel() {
+        
+    }
+
+
+    // MARK: Hashable
+
+    public func hash(into hasher: inout Hasher) {
+        let identifier = ObjectIdentifier(self)
+        hasher.combine(identifier)
+    }
+
+    public static func == (lhs: ViewStateObservation, rhs: ViewStateObservation) -> Bool {
+        lhs === rhs
+    }
+
+
+    // MARK: Storage
+
+    public func store(in observations: inout Set<ViewStateObservation>) {
+        observations.insert(self)
+    }
+}
+
+
+private final class ConcreteViewStateObservation: ViewStateObservation, ViewStateHosting {
+
+    // MARK: Properties
+
+    var handler: (() -> Void)?
+
+
+    // MARK: ViewStateHosting
+
+    func viewStateDidChange() {
+        handler?()
+    }
+
+
+    // MARK: ViewStateObservation
+
+    override func cancel() {
+        handler = nil
     }
 }
