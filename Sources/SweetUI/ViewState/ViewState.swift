@@ -4,7 +4,7 @@ import UIKit
 // MARK: - ViewState
 
 @propertyWrapper
-public final class ViewState<Value>: ReadOnlyViewState<Value> {
+public final class ViewState<Value>: BaseViewState {
 
     // MARK: Types
 
@@ -15,15 +15,14 @@ public final class ViewState<Value>: ReadOnlyViewState<Value> {
 
     public var projectedValue: ViewState<Value> { self }
 
-    public override var value: Value {
-        get { _value }
-        set { _value = newValue }
+    public var value: Value {
+        didSet { setHostsNeedUpdate() }
     }
 
-    @available(*, unavailable, message: "@ViewState is only available on instances of ViewStateUpdating")
+    @available(*, unavailable, message: "@ViewState is only available on instances of ViewStateHosting")
     public var wrappedValue: Value {
-        get { _value }
-        set { _value = newValue }
+        get { value }
+        set { value = newValue }
     }
 
     public static subscript<EnclosingObject: ViewStateHosting>(
@@ -41,33 +40,12 @@ public final class ViewState<Value>: ReadOnlyViewState<Value> {
         }
     }
 
-    private var _value: Value {
-        didSet { setHostsNeedUpdate() }
-    }
-
 
     // MARK: Instance life cycle
 
     public init(wrappedValue: Value) {
-        self._value = wrappedValue
-        super.init(getter: nil)
-        self.getter = { [unowned self] in self._value }
-    }
-}
-
-
-// MARK: - ReadOnlyViewState
-
-public class ReadOnlyViewState<Value>: BaseViewState {
-
-    typealias Getter = () -> Value
-
-    var value: Value { getter() }
-    var getter: Getter!
-
-
-    init(getter: Getter?) {
-        self.getter = getter
+        self.value = wrappedValue
+        super.init()
     }
 }
 
@@ -75,6 +53,8 @@ public class ReadOnlyViewState<Value>: BaseViewState {
 // MARK: - BaseViewState
 
 public class BaseViewState {
+
+    // MARK: Types
 
     private struct HostWrapper: Hashable {
         
@@ -94,7 +74,13 @@ public class BaseViewState {
         }
     }
 
+
+    // MARK: Properties
+
     private var hostWrappers = Set<HostWrapper>()
+
+
+    // MARK: Host Management
 
     public func addHost(_ host: ViewStateHosting) {
         let wrapper = HostWrapper(host: host)
