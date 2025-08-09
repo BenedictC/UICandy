@@ -132,7 +132,7 @@ open class _Control: UIControl {
         // Do nothing, subclasses should override
     }
 
-    public func setViewStateDidChange() {
+    public func viewStateDidChange() {
         isPropertyUpdatedNeeded = true
         setNeedsLayout()
     }
