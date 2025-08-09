@@ -44,7 +44,7 @@ open class _CollectionReusableView: UICollectionReusableView, ReuseIdentifiable 
         // Do nothing, subclasses should override
     }
 
-    public func setViewStateDidChange() {
+    public func viewStateDidChange() {
         isPropertyUpdatedNeeded = true
         setNeedsLayout()
     }

@@ -4,7 +4,7 @@ import UIKit
 public protocol ViewStateHosting: AnyObject {
 
     func initializeViewStateHosting()
-    func setViewStateDidChange()
+    func viewStateDidChange()
 }
 
 
@@ -19,7 +19,7 @@ public extension ViewStateHosting {
                 viewState.addHost(self)
             }
         }
-        setViewStateDidChange()
+        viewStateDidChange()
     }
 }
 

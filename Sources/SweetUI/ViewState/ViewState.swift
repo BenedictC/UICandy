@@ -16,7 +16,7 @@ public final class ViewState<Value>: BaseViewState {
     public var projectedValue: ViewState<Value> { self }
 
     public var value: Value {
-        didSet { setHostsNeedUpdate() }
+        didSet { notifyHostsOfViewStateChange() }
     }
 
     @available(*, unavailable, message: "@ViewState is only available on instances of ViewStateHosting")
@@ -91,9 +91,9 @@ public class BaseViewState {
         hostWrappers = hostWrappers.filter { $0.host != nil && $0.host !== host }
     }
 
-    func setHostsNeedUpdate() {
+    func notifyHostsOfViewStateChange() {
         for wrapper in hostWrappers {
-            wrapper.host?.setViewStateDidChange()
+            wrapper.host?.viewStateDidChange()
         }
     }
 }
