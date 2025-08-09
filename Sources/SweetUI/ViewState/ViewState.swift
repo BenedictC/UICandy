@@ -37,7 +37,6 @@ public final class ViewState<Value>: ReadOnlyViewState<Value> {
         }
         set {
             let viewState = host[keyPath: storageKeyPath]
-            warnOfSuboptimalImplementationIfNeeded(object: host)
             viewState.value = newValue
         }
     }
@@ -53,29 +52,6 @@ public final class ViewState<Value>: ReadOnlyViewState<Value> {
         self._value = wrappedValue
         super.init(getter: nil)
         self.getter = { [unowned self] in self._value }
-    }
-
-
-    // MARK: Debug
-
-    private static func warnOfSuboptimalImplementationIfNeeded(object: ViewStateHosting) {
-        let illBehavingMethodName: String
-        if object is UIView, threadContainsSymbol(matching: { $0.contains("layoutSubviews") }) {
-            illBehavingMethodName = "layoutSubviews()"
-        } else
-        if object is UIViewController, threadContainsSymbol(matching: { $0.contains("viewWillLayoutSubviews") }) {
-            illBehavingMethodName = "viewWillLayoutSubviews()"
-        } else {
-            return
-        }
-
-        let message = "ViewState is being modified during \(illBehavingMethodName) of \(object)."
-        + " This will cause excessive layout passes."
-        runtimeWarn(message)
-    }
-
-    static func threadContainsSymbol(matching predicate: (String) -> Bool) -> Bool {
-        Thread.callStackSymbols.contains(where: predicate)
     }
 }
 

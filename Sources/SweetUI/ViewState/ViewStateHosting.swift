@@ -4,15 +4,11 @@ import UIKit
 public protocol ViewStateHosting: AnyObject {
 
     func initializeViewStateHosting()
-
     func setViewStateDidChange()
-
-    // func setNeedsUpdateProperties()
-    // func updateProperties()
 }
 
 
-// MARK: Default implementations
+// MARK: - Default implementations
 
 public extension ViewStateHosting {
 
@@ -23,31 +19,17 @@ public extension ViewStateHosting {
                 viewState.addHost(self)
             }
         }
+        setViewStateDidChange()
     }
 }
 
 
-extension ViewStateHosting where Self: UIView {
+// MARK: - Debug
 
-    public func setViewStateDidChange() {
-        if #available(iOS 14, *) {
-            if let cell = self as? UICollectionViewCell {
-                cell.setNeedsUpdateConfiguration()
-            } else {
-                setNeedsLayout()
-            }
-        } else {
-            setNeedsLayout()
-        }
+extension ViewStateHosting {
+
+    func warnOfReentrantUpdateProperties() {
+        let message = "Object <\(self)> recursively called updateProperties(). This may cause deadlocks."
+        runtimeWarn(message)
     }
 }
-
-
-extension ViewStateHosting where Self: UIViewController {
-
-    public func setViewStateDidChange() {
-        guard isViewLoaded else { return }
-        view?.setNeedsLayout()
-    }
-}
-

@@ -40,9 +40,11 @@ open class _ViewController: UIViewController {
     - lazy var rootView = UICollectionView(snapshotCoordinator: snapshotCoordinator) { [weak self] ... }
     """
 
+    private var isPropertyUpdatedNeeded = true
+
 
     // MARK: Instance life cycle
-    
+
     public init() {
         super.init(nibName: nil, bundle: nil)
 
@@ -52,15 +54,15 @@ open class _ViewController: UIViewController {
         // awake
         detectPotentialRetainCycle(of: self, advice: retainCycleAdvice) { owner.awake() }
     }
-    
+
     @available(*, unavailable)
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    
+
+
     // MARK: View life cycle
-    
+
     @available(*, deprecated, message: "Use viewDidLoad to configure the view.")
     override public func loadView() {
         guard let owner = self as? _ViewControllerRequirements else {
@@ -84,4 +86,47 @@ open class _ViewController: UIViewController {
 
         (self as? ViewStateHosting)?.initializeViewStateHosting()
     }
+
+
+    // MARK: Layout
+
+    open override func viewWillLayoutSubviews() {
+        updatePropertiesIfNeeded()
+        super.viewWillLayoutSubviews()
+    }
+
+
+    // MARK: ViewState
+
+    open func updateProperties() {
+        // Do nothing, subclasses should override
+    }
+
+    public func setViewStateDidChange() {
+        isPropertyUpdatedNeeded = true
+        if isViewLoaded {
+            view.setNeedsLayout()
+        }
+    }
+
+    open func updatePropertiesIfNeeded() {
+        guard isPropertyUpdatedNeeded else { return }
+        isPropertyUpdatedNeeded = false
+        
+        updateProperties()
+        
+        if isPropertyUpdatedNeeded {
+            (self as? ViewStateHosting)?.warnOfReentrantUpdateProperties()
+            isPropertyUpdatedNeeded = false
+        }
+    }
+}
+
+
+// MARK: - Compile-time conformance check
+
+@available(iOS 15, *)
+private class CompilationCheck: ViewController {
+    
+    let rootView = UIView() 
 }
