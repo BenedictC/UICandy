@@ -16,12 +16,7 @@ public extension ListCell {
             cellProvider: { collectionView, indexPath, value in
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! CellType
                 configuration(cell)
-                cell.configurationUpdateHandler = { cell, _ in
-                    guard let cell = cell as? CellType else {
-                        return
-                    }
-                    cell.item = value
-                }
+                cell.item = value                
                 return cell
             }
         )
