@@ -6,14 +6,14 @@ import UIKit
 public typealias CollectionReusableView = _CollectionReusableView
                                         & ItemRepresentable
                                         & ViewBodyProvider
-                                        & ViewStateHosting
+                                        & ViewStateObserver
 
 
 open class _CollectionReusableView: UICollectionReusableView, ReuseIdentifiable {
 
     // MARK: Properties
 
-    private var isPropertyUpdatedNeeded = true
+    private var isNeedsPropagateViewState = true
     
 
     // MARK: Instance life cycle
@@ -21,7 +21,7 @@ open class _CollectionReusableView: UICollectionReusableView, ReuseIdentifiable 
     required public override init(frame: CGRect) {
         super.init(frame: frame)
         Self.initializeBodyHosting(of: self)
-        (self as? ViewStateHosting)?.initializeViewStateHosting()
+        (self as? ViewStateObserver)?.initializeViewStateObserving()
     }
 
     @available(*, unavailable)
@@ -34,31 +34,31 @@ open class _CollectionReusableView: UICollectionReusableView, ReuseIdentifiable 
 
     open override func layoutSubviews() {
         super.layoutSubviews()
-        updatePropertiesIfNeeded()
+
+        if isNeedsPropagateViewState {
+            isNeedsPropagateViewState = false
+
+            // Perform update
+            propagateViewState()
+
+            let didMutateViewStateDuringPropagation = isNeedsPropagateViewState
+            if didMutateViewStateDuringPropagation {
+                (self as? ViewStateObserver)?.warnOfReentrantViewStatePropagation()
+                isNeedsPropagateViewState = false
+            }
+        }
     }
 
 
-    // MARK: View state
-
-    open func updateProperties() {
-        // Do nothing, subclasses should override
-    }
+    // MARK: ViewState
 
     public func viewStateDidChange() {
-        isPropertyUpdatedNeeded = true
+        isNeedsPropagateViewState = true
         setNeedsLayout()
     }
 
-    public func updatePropertiesIfNeeded() {
-        guard isPropertyUpdatedNeeded else { return }
-        isPropertyUpdatedNeeded = false
-
-        updateProperties()
-
-        if isPropertyUpdatedNeeded {
-            (self as? ViewStateHosting)?.warnOfReentrantUpdateProperties()
-            isPropertyUpdatedNeeded = false
-        }
+    open func propagateViewState() {
+        // Do nothing. For subclasses to override
     }
 }
 
