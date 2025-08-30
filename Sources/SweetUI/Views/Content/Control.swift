@@ -3,7 +3,7 @@ import UIKit
 
 // MARK: - View
 
-public typealias Control = _Control & ViewBodyProvider & ViewStateHosting
+public typealias Control = _Control & ViewBodyProvider & ViewStateObserver
 
 
 extension UIControl.Event {
@@ -45,8 +45,8 @@ open class _Control: UIControl {
         set { super.isHidden = newValue; notifyOfStateChange() }
     }
     
-    private var isPropertyUpdatedNeeded = true
-    
+    private var isNeedsPropagateViewState = true
+
     
     // MARK: Instance life cycle
     
@@ -54,7 +54,7 @@ open class _Control: UIControl {
         self.hitTestHandler = Self.makeDefaultHitTestProvider()
         super.init(frame: .zero)
         UIView.initializeBodyHosting(of: self)
-        (self as? ViewStateHosting)?.initializeViewStateHosting()
+        (self as? ViewStateObserver)?.initializeViewStateObserving()
     }
     
     @available(*, unavailable)
@@ -122,31 +122,31 @@ open class _Control: UIControl {
 
     open override func layoutSubviews() {
         super.layoutSubviews()
-        updatePropertiesIfNeeded()
+
+        if isNeedsPropagateViewState {
+            isNeedsPropagateViewState = false
+
+            // Perform update
+            propagateViewState()
+
+            let didMutateViewStateDuringPropagation = isNeedsPropagateViewState
+            if didMutateViewStateDuringPropagation {
+                (self as? ViewStateObserver)?.warnOfReentrantViewStatePropagation()
+                isNeedsPropagateViewState = false
+            }
+        }
     }
 
 
     // MARK: ViewState
-    
-    open func updateProperties() {
-        // Do nothing, subclasses should override
-    }
 
     public func viewStateDidChange() {
-        isPropertyUpdatedNeeded = true
+        isNeedsPropagateViewState = true
         setNeedsLayout()
     }
 
-    public func updatePropertiesIfNeeded() {
-        guard isPropertyUpdatedNeeded else { return }
-        isPropertyUpdatedNeeded = false
-        
-        updateProperties()
-        
-        if isPropertyUpdatedNeeded {
-            (self as? ViewStateHosting)?.warnOfReentrantUpdateProperties()
-            isPropertyUpdatedNeeded = false
-        }
+    open func propagateViewState() {
+        // Do nothing. For subclasses to override
     }
 }
 

@@ -16,16 +16,16 @@ public final class ViewState<Value>: BaseViewState {
     public var projectedValue: ViewState<Value> { self }
 
     public var value: Value {
-        didSet { notifyHostsOfViewStateChange() }
+        didSet { notifyObserversOfViewStateChange() }
     }
 
-    @available(*, unavailable, message: "@ViewState is only available on instances of ViewStateHosting")
+    @available(*, unavailable, message: "@ViewState is only available on instances of ViewStateObserver")
     public var wrappedValue: Value {
         get { value }
         set { value = newValue }
     }
 
-    public static subscript<EnclosingObject: ViewStateHosting>(
+    public static subscript<EnclosingObject: ViewStateObserver>(
         _enclosingInstance host: EnclosingObject,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingObject, Value>,
         storage storageKeyPath: ReferenceWritableKeyPath<EnclosingObject, ViewState<Value>>
@@ -56,20 +56,20 @@ public class BaseViewState {
 
     // MARK: Types
 
-    private struct HostWrapper: Hashable {
-        
-        weak var host: ViewStateHosting?
+    private struct ObserverWrapper: Hashable {
 
-        static func ==(lhs: HostWrapper, rhs: HostWrapper) -> Bool {
-            lhs.host === rhs.host
+        weak var observer: ViewStateObserver?
+
+        static func ==(lhs: ObserverWrapper, rhs: ObserverWrapper) -> Bool {
+            lhs.observer === rhs.observer
         }
 
         func hash(into hasher: inout Hasher) {
-            guard let host else {
+            guard let observer else {
                 hasher.combine(0)
                 return
             }
-            let id = ObjectIdentifier(host)
+            let id = ObjectIdentifier(observer)
             hasher.combine(id)
         }
     }
@@ -77,93 +77,23 @@ public class BaseViewState {
 
     // MARK: Properties
 
-    private var hostWrappers = Set<HostWrapper>()
+    private var wrappers = Set<ObserverWrapper>()
 
 
     // MARK: Host Management
 
-    public func addHost(_ host: ViewStateHosting) {
-        let wrapper = HostWrapper(host: host)
-        hostWrappers.insert(wrapper)
+    public func addObserver(_ host: ViewStateObserver) {
+        let wrapper = ObserverWrapper(observer: host)
+        wrappers.insert(wrapper)
     }
 
-    public func removeHost(_ host: ViewStateHosting) {
-        hostWrappers = hostWrappers.filter { $0.host != nil && $0.host !== host }
+    public func removeObserver(_ host: ViewStateObserver) {
+        wrappers = wrappers.filter { $0.observer != nil && $0.observer !== host }
     }
 
-    func notifyHostsOfViewStateChange() {
-        for wrapper in hostWrappers {
-            wrapper.host?.viewStateDidChange()
+    func notifyObserversOfViewStateChange() {
+        for wrapper in wrappers {
+            wrapper.observer?.viewStateDidChange()
         }
-    }
-}
-
-
-// MARK: - Observation
-
-public extension ViewState {
-
-    func observe(withHandler handler: @escaping (Value) -> Void) -> ViewStateObservation {
-        // Create observation
-        let observation = ConcreteViewStateObservation()
-        observation.handler = { [weak self] in
-            guard let self else { return }
-            handler(self.value)
-        }
-        self.addHost(observation)
-
-        // Fire initial value
-        handler(value)
-
-        return observation
-    }
-}
-
-
-public class ViewStateObservation: Hashable {
-
-    public func cancel() {
-        
-    }
-
-
-    // MARK: Hashable
-
-    public func hash(into hasher: inout Hasher) {
-        let identifier = ObjectIdentifier(self)
-        hasher.combine(identifier)
-    }
-
-    public static func == (lhs: ViewStateObservation, rhs: ViewStateObservation) -> Bool {
-        lhs === rhs
-    }
-
-
-    // MARK: Storage
-
-    public func store(in observations: inout Set<ViewStateObservation>) {
-        observations.insert(self)
-    }
-}
-
-
-private final class ConcreteViewStateObservation: ViewStateObservation, ViewStateHosting {
-
-    // MARK: Properties
-
-    var handler: (() -> Void)?
-
-
-    // MARK: ViewStateHosting
-
-    func viewStateDidChange() {
-        handler?()
-    }
-
-
-    // MARK: ViewStateObservation
-
-    override func cancel() {
-        handler = nil
     }
 }

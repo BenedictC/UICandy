@@ -8,7 +8,7 @@ public typealias ViewController = _ViewController & ViewControllerRequirements
 
 // MARK: - Associated Types
 
-public protocol ViewControllerRequirements: _ViewControllerRequirements, ViewStateHosting {
+public protocol ViewControllerRequirements: _ViewControllerRequirements, ViewStateObserver {
     associatedtype View: UIView
     
     var rootView: View { get }
@@ -40,7 +40,7 @@ open class _ViewController: UIViewController {
     - lazy var rootView = UICollectionView(snapshotCoordinator: snapshotCoordinator) { [weak self] ... }
     """
 
-    private var isPropertyUpdatedNeeded = true
+    private var isNeedsPropagateViewState = true
 
 
     // MARK: Instance life cycle
@@ -84,41 +84,41 @@ open class _ViewController: UIViewController {
             self.view.backgroundColor = .systemBackground
         }
 
-        (self as? ViewStateHosting)?.initializeViewStateHosting()
+        (self as? ViewStateObserver)?.initializeViewStateObserving()
     }
 
 
     // MARK: Layout
 
     open override func viewWillLayoutSubviews() {
-        updatePropertiesIfNeeded()
         super.viewWillLayoutSubviews()
+
+        if isNeedsPropagateViewState {
+            isNeedsPropagateViewState = false
+
+            // Perform update
+            propagateViewState()
+
+            let didMutateViewStateDuringPropagation = isNeedsPropagateViewState
+            if didMutateViewStateDuringPropagation {
+                (self as? ViewStateObserver)?.warnOfReentrantViewStatePropagation()
+                isNeedsPropagateViewState = false
+            }
+        }
     }
 
 
     // MARK: ViewState
 
-    open func updateProperties() {
-        // Do nothing, subclasses should override
-    }
-
     public func viewStateDidChange() {
-        isPropertyUpdatedNeeded = true
+        isNeedsPropagateViewState = true
         if isViewLoaded {
             view.setNeedsLayout()
         }
     }
 
-    open func updatePropertiesIfNeeded() {
-        guard isPropertyUpdatedNeeded else { return }
-        isPropertyUpdatedNeeded = false
-        
-        updateProperties()
-        
-        if isPropertyUpdatedNeeded {
-            (self as? ViewStateHosting)?.warnOfReentrantUpdateProperties()
-            isPropertyUpdatedNeeded = false
-        }
+    open func propagateViewState() {
+        // Do nothing. For subclasses to override
     }
 }
 

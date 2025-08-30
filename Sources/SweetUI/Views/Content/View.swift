@@ -1,7 +1,7 @@
 import UIKit
 
 
-public typealias View = _View & ViewBodyProvider & ViewStateHosting
+public typealias View = _View & ViewBodyProvider & ViewStateObserver
 
 
 // MARK: - Implementation
@@ -10,15 +10,15 @@ open class _View: UIView {
 
     // MARK: Properties
 
-    private var isPropertyUpdatedNeeded = true
+    private var isNeedsPropagateViewState = true
 
 
     // MARK: Instance life cycle
-    
+
     public init() {
         super.init(frame: .zero)
         Self.initializeBodyHosting(of: self)
-        (self as? ViewStateHosting)?.initializeViewStateHosting()
+        (self as? ViewStateObserver)?.initializeViewStateObserving()
     }
 
     @available(*, unavailable)
@@ -31,30 +31,36 @@ open class _View: UIView {
 
     open override func layoutSubviews() {
         super.layoutSubviews()
-        updatePropertiesIfNeeded()
+
+        if isNeedsPropagateViewState {
+            isNeedsPropagateViewState = false
+
+            // Perform update
+            propagateViewState()
+
+            let didMutateViewStateDuringPropagation = isNeedsPropagateViewState
+            if didMutateViewStateDuringPropagation {
+                (self as? ViewStateObserver)?.warnOfReentrantViewStatePropagation()
+                isNeedsPropagateViewState = false
+            }
+        }
     }
 
-
-    // MARK: ViewState
-
-    open func updateProperties() {
-        // Do nothing, subclasses should override
+    open func propagateViewState() {
+        // Do nothing. For subclasses to override
     }
+}
+
+
+// MARK: - ViewState
+
+extension _View {
 
     public func viewStateDidChange() {
-        isPropertyUpdatedNeeded = true
+        isNeedsPropagateViewState = true
         setNeedsLayout()
-    }
-
-    public func updatePropertiesIfNeeded() {
-        guard isPropertyUpdatedNeeded else { return }
-        isPropertyUpdatedNeeded = false
-
-        updateProperties()
-
-        if isPropertyUpdatedNeeded {
-            (self as? ViewStateHosting)?.warnOfReentrantUpdateProperties()
-            isPropertyUpdatedNeeded = false
+        if #available(iOS 26, *) {
+            setNeedsUpdateProperties()
         }
     }
 }
