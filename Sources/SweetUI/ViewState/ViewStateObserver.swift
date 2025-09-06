@@ -3,6 +3,7 @@ import UIKit
 
 // MARK: - ViewStateObserver
 
+@MainActor
 public protocol ViewStateObserver: AnyObject {
 
     func initializeViewStateObserving()
@@ -41,6 +42,7 @@ extension ViewStateObserver {
 
 public extension ViewState {
 
+    @MainActor
     func observe(withHandler handler: @escaping (Value) -> Void) -> ViewStateObservation {
         // Create observation
         let observation = ConcreteViewStateObservation()
@@ -57,7 +59,7 @@ public extension ViewState {
     }
 }
 
-
+@MainActor
 public class ViewStateObservation: Hashable {
 
     public func cancel() {
@@ -67,11 +69,13 @@ public class ViewStateObservation: Hashable {
 
     // MARK: Hashable
 
+    nonisolated
     public func hash(into hasher: inout Hasher) {
         let identifier = ObjectIdentifier(self)
         hasher.combine(identifier)
     }
 
+    nonisolated
     public static func == (lhs: ViewStateObservation, rhs: ViewStateObservation) -> Bool {
         lhs === rhs
     }
@@ -83,7 +87,6 @@ public class ViewStateObservation: Hashable {
         observations.insert(self)
     }
 }
-
 
 private final class ConcreteViewStateObservation: ViewStateObservation, ViewStateObserver {
 

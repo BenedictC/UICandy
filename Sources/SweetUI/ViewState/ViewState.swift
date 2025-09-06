@@ -52,6 +52,7 @@ public final class ViewState<Value>: BaseViewState {
 
 // MARK: - BaseViewState
 
+@MainActor
 public class BaseViewState {
 
     // MARK: Types
