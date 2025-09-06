@@ -82,8 +82,8 @@ public class BaseViewState {
 
     // MARK: Host Management
 
-    public func addObserver(_ host: ViewStateObserver) {
-        let wrapper = ObserverWrapper(observer: host)
+    public func addObserver(_ observer: ViewStateObserver) {
+        let wrapper = ObserverWrapper(observer: observer)
         wrappers.insert(wrapper)
     }
 
