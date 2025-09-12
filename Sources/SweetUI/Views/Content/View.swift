@@ -10,7 +10,7 @@ open class _View: UIView {
 
     // MARK: Properties
 
-    private var isNeedsPropagateViewState = true
+    private var isUpdateViewPropertyNeeded = true
 
 
     // MARK: Instance life cycle
@@ -32,36 +32,34 @@ open class _View: UIView {
     open override func layoutSubviews() {
         super.layoutSubviews()
 
-        if isNeedsPropagateViewState {
-            isNeedsPropagateViewState = false
+        if isUpdateViewPropertyNeeded {
+            isUpdateViewPropertyNeeded = false
 
             // Perform update
-            propagateViewState()
+            updateViewProperties()
 
-            let didMutateViewStateDuringPropagation = isNeedsPropagateViewState
+            let didMutateViewStateDuringPropagation = isUpdateViewPropertyNeeded
             if didMutateViewStateDuringPropagation {
                 (self as? ViewStateObserver)?.warnOfReentrantViewStatePropagation()
-                isNeedsPropagateViewState = false
+                isUpdateViewPropertyNeeded = false
             }
         }
     }
 
-    open func propagateViewState() {
-        // Do nothing. For subclasses to override
-    }
-}
 
-
-// MARK: - ViewState
-
-extension _View {
+    // MARK: ViewState
 
     public func viewStateDidChange() {
-        isNeedsPropagateViewState = true
+        setNeedsUpdateViewProperties()
+    }
+
+    open func setNeedsUpdateViewProperties() {
+        isUpdateViewPropertyNeeded = true
         setNeedsLayout()
-        if #available(iOS 26, *) {
-            setNeedsUpdateProperties()
-        }
+    }
+
+    open func updateViewProperties() {
+        // Do nothing. For subclasses to override
     }
 }
 
