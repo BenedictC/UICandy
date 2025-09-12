@@ -68,17 +68,16 @@ public extension ViewBodyProvider {
     
     @MainActor
     func _initializeBodyHosting() {
-        if body.superview == nil { // This causes body to be loaded
-            detectPotentialRetainCycle(of: self) {
-                self.awake()
-            }
-        }
+        _ = body // This causes body to be loaded        
         detectPotentialRetainCycle(of: self) {
             let container = self.bodyContainer
             let isSelfHosted = body == container
             if !isSelfHosted {
                 arrangeBody(body, in: container)
             }
+        }
+        detectPotentialRetainCycle(of: self) {
+            self.awake()
         }
     }
 }

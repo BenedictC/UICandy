@@ -45,7 +45,7 @@ open class _Control: UIControl {
         set { super.isHidden = newValue; notifyOfStateChange() }
     }
     
-    private var isNeedsPropagateViewState = true
+    private var isUpdateViewPropertyNeeded = true
 
     
     // MARK: Instance life cycle
@@ -123,16 +123,16 @@ open class _Control: UIControl {
     open override func layoutSubviews() {
         super.layoutSubviews()
 
-        if isNeedsPropagateViewState {
-            isNeedsPropagateViewState = false
+        if isUpdateViewPropertyNeeded {
+        isUpdateViewPropertyNeeded = false
 
             // Perform update
-            propagateViewState()
+            updateViewProperties()
 
-            let didMutateViewStateDuringPropagation = isNeedsPropagateViewState
+            let didMutateViewStateDuringPropagation = isUpdateViewPropertyNeeded
             if didMutateViewStateDuringPropagation {
                 (self as? ViewStateObserver)?.warnOfReentrantViewStatePropagation()
-                isNeedsPropagateViewState = false
+                isUpdateViewPropertyNeeded = false
             }
         }
     }
@@ -141,11 +141,15 @@ open class _Control: UIControl {
     // MARK: ViewState
 
     public func viewStateDidChange() {
-        isNeedsPropagateViewState = true
+        setNeedsUpdateViewProperties()
+    }
+
+    open func setNeedsUpdateViewProperties() {
+        isUpdateViewPropertyNeeded = true
         setNeedsLayout()
     }
 
-    open func propagateViewState() {
+    open func updateViewProperties() {
         // Do nothing. For subclasses to override
     }
 }

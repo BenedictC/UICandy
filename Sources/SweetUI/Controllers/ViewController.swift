@@ -8,14 +8,14 @@ public typealias ViewController = _ViewController & ViewControllerRequirements
 
 // MARK: - Associated Types
 
-public protocol ViewControllerRequirements: _ViewControllerRequirements, ViewStateObserver {
+public protocol ViewControllerRequirements: _ViewControllerRequirements {
     associatedtype View: UIView
     
     var rootView: View { get }
 }
 
 
-public protocol _ViewControllerRequirements: _ViewController {
+public protocol _ViewControllerRequirements: _ViewController, ViewStateObserver {
     var _rootView: UIView { get }
     func awake()
 }
@@ -40,7 +40,7 @@ open class _ViewController: UIViewController {
     - lazy var rootView = UICollectionView(snapshotCoordinator: snapshotCoordinator) { [weak self] ... }
     """
 
-    private var isNeedsPropagateViewState = true
+    private var isUpdateViewPropertyNeeded = true
 
 
     // MARK: Instance life cycle
@@ -93,16 +93,16 @@ open class _ViewController: UIViewController {
     open override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        if isNeedsPropagateViewState {
-            isNeedsPropagateViewState = false
+        if isUpdateViewPropertyNeeded {
+            isUpdateViewPropertyNeeded = false
 
             // Perform update
-            propagateViewState()
+            updateViewProperties()
 
-            let didMutateViewStateDuringPropagation = isNeedsPropagateViewState
+            let didMutateViewStateDuringPropagation = isUpdateViewPropertyNeeded
             if didMutateViewStateDuringPropagation {
                 (self as? ViewStateObserver)?.warnOfReentrantViewStatePropagation()
-                isNeedsPropagateViewState = false
+                isUpdateViewPropertyNeeded = false
             }
         }
     }
@@ -111,13 +111,17 @@ open class _ViewController: UIViewController {
     // MARK: ViewState
 
     public func viewStateDidChange() {
-        isNeedsPropagateViewState = true
+        setNeedsUpdateViewProperties()
+    }
+
+    open func setNeedsUpdateViewProperties() {
+        isUpdateViewPropertyNeeded = true
         if isViewLoaded {
             view.setNeedsLayout()
         }
     }
 
-    open func propagateViewState() {
+    open func updateViewProperties() {
         // Do nothing. For subclasses to override
     }
 }

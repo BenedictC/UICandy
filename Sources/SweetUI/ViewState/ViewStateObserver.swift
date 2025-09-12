@@ -32,7 +32,7 @@ public extension ViewStateObserver {
 extension ViewStateObserver {
 
     func warnOfReentrantViewStatePropagation() {
-        let message = "Object <\(self)> recursively called propagateViewState(). This may cause deadlocks."
+        let message = "Object <\(self)> recursively called updateViewProperties(). This may cause deadlocks."
         runtimeWarn(message)
     }
 }
