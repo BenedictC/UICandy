@@ -33,6 +33,7 @@ open class _CollectionViewCell: UICollectionViewCell, ReuseIdentifiable {
 
     // MARK: Layout
 
+    @available(iOS 14, *)
     open override func updateConfiguration(using configuration: UICellConfigurationState) {
         super.updateConfiguration(using: configuration)
 
@@ -59,7 +60,11 @@ open class _CollectionViewCell: UICollectionViewCell, ReuseIdentifiable {
 
     open func setNeedsUpdateViewProperties() {
         isUpdateViewPropertyNeeded = true
-        setNeedsUpdateConfiguration()
+        if #available(iOS 14, *) {
+            setNeedsUpdateConfiguration()
+        } else {
+            updateViewProperties()
+        }
     }
 
     open func updateViewProperties() {
