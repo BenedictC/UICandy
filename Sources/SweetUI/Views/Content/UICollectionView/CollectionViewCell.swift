@@ -33,8 +33,8 @@ open class _CollectionViewCell: UICollectionViewCell, ReuseIdentifiable {
 
     // MARK: Layout
 
-    open override func layoutSubviews() {
-        super.layoutSubviews()
+    open override func updateConfiguration(using configuration: UICellConfigurationState) {
+        super.updateConfiguration(using: configuration)
 
         if isUpdateViewPropertyNeeded {
             isUpdateViewPropertyNeeded = false
@@ -59,7 +59,7 @@ open class _CollectionViewCell: UICollectionViewCell, ReuseIdentifiable {
 
     open func setNeedsUpdateViewProperties() {
         isUpdateViewPropertyNeeded = true
-        setNeedsLayout()
+        setNeedsUpdateConfiguration()
     }
 
     open func updateViewProperties() {
