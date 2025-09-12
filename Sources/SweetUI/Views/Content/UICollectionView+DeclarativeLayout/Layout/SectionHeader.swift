@@ -101,7 +101,7 @@ public extension SectionHeader {
             supplementRegistrar: { collectionView in
                 collectionView.register(viewType, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
             },
-            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifier in
+            supplementProvider: { elementKind, collectionView, indexPath, sectionIdentifier in
                 let view = collectionView.dequeueReusableSupplementaryView(
                     ofKind: elementKind,
                     withReuseIdentifier: reuseIdentifier,
@@ -123,7 +123,7 @@ public extension SectionHeader {
             supplementRegistrar: { collectionView in
                 collectionView.register(ViewType.self, forSupplementaryViewOfKind: elementKind, withReuseIdentifier: reuseIdentifier)
             },
-            supplementProvider: { reuseIdentifier, collectionView, indexPath, sectionIdentifier in
+            supplementProvider: { elementKind, collectionView, indexPath, sectionIdentifier in
                 let view = collectionView.dequeueReusableSupplementaryView(
                     ofKind: elementKind,
                     withReuseIdentifier: reuseIdentifier,
