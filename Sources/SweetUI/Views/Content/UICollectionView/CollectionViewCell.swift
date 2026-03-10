@@ -81,12 +81,12 @@ extension _CollectionViewCell {
         body.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(body)
         NSLayoutConstraint.activate([
-            body.topAnchor.constraint(equalTo: container.topAnchor),
-            body.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            body.topAnchor.constraint(equalTo: container.safeAreaLayoutGuide.topAnchor),
+            body.leadingAnchor.constraint(equalTo: container.safeAreaLayoutGuide.leadingAnchor),
             // Priority is less than required to break cleanly if the content resizes without invalidating the
             // collectionView layout.
-            body.bottomAnchor.constraint(equalTo: container.bottomAnchor).priority(.almostRequired),
-            body.trailingAnchor.constraint(equalTo: container.trailingAnchor).priority(.almostRequired),
+            body.bottomAnchor.constraint(equalTo: container.safeAreaLayoutGuide.bottomAnchor).priority(.almostRequired),
+            body.trailingAnchor.constraint(equalTo: container.safeAreaLayoutGuide.trailingAnchor).priority(.almostRequired),
         ])
     }
 }
