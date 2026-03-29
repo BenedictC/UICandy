@@ -161,6 +161,7 @@ public extension CollectionViewSnapshotCoordinator {
 
     // MARK: SectionSnapshot updating
 
+    // TODO: Add a variation of this method that returns multiple sections
     func updateSectionSnapshot(
         animatingDifferences animated: Bool = true,
         changes: @escaping (Snapshot) -> (SectionIdentifier, SectionSnapshot)?,
