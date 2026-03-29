@@ -3,16 +3,12 @@ import UIKit
 
 // MARK: - AlertController
 
-open class AlertController<T>: UIAlertController, Presentable {
-
-    // MARK: Types
-
-    public typealias Success = T
-
+public class AlertController: UIAlertController {
 
     // MARK: Properties
 
-    private var continuation: CheckedContinuation<Success, Error>?
+    public var completion: ((AlertAction?) -> Void)?
+    public private(set) var selectedAction: AlertAction?
 
 
     // MARK: Instance life cycle
@@ -22,33 +18,33 @@ open class AlertController<T>: UIAlertController, Presentable {
         message: String? = nil,
         preferredStyle: UIAlertController.Style = .alert,
         inputs: [AlertInput] = [],
-        actions: [AlertAction<T>]
+        actions: [AlertAction],
+        completion: ((AlertAction?) -> Void)? = nil
     ) {
         self.init(title: title, message: message, preferredStyle: preferredStyle)
 
         for input in inputs {
             addTextField(configurationHandler: { input.configure(textField: $0) })
-            "TODO: Handle text changes"
         }
-
         var preferredAlertAction: UIAlertAction?
         for action in actions {
-            let uiAlertAction = UIAlertAction(title: action.title, style: action.style) { [weak self] uiAction in
-                self?.continuation?.resume(with: .success(action.response))
-            }
-            action.uiAlertAction = uiAlertAction
+            let uiAlertAction = action.initializeUIAlertAction(handler: { [weak self] _ in
+                self?.selectedAction = action
+            })
             addAction(uiAlertAction)
             if action.isPreferred {
                 preferredAlertAction = uiAlertAction
             }
         }
         self.preferredAction = preferredAlertAction
+
+        self.completion = completion
     }
 
 
     // MARK: View life cycle
 
-    open override func viewWillAppear(_ animated: Bool) {
+    public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // Fix for incorrect tint color
         if let tintColor = view.tintColor {
@@ -57,16 +53,9 @@ open class AlertController<T>: UIAlertController, Presentable {
         }
     }
 
-    open override func viewDidDisappear(_ animated: Bool) {
+    public override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        didDisappear()
-    }
-
-
-    // MARK: Presentable
-
-    public func fulfilContinuationForCancelledPresentation(_ continuation: CheckedContinuation<Success, Error>) {
-        self.continuation = continuation
+        completion?(selectedAction)
     }
 }
 
@@ -107,87 +96,76 @@ public final class AlertInput: NSObject {
 
 // MARK: - AlertAction
 
-public final class AlertAction<T> {
+public final class AlertAction {
 
     public let title: String
     public let style: UIAlertAction.Style
-    public let response: T
     public let isPreferred: Bool
 
     public var isEnabled: Bool {
         didSet { uiAlertAction?.isEnabled = isEnabled }
     }
 
-    internal var uiAlertAction: UIAlertAction? {
-        didSet { uiAlertAction?.isEnabled = isEnabled }
-    }
+    internal var uiAlertAction: UIAlertAction?
 
 
     init(
         title: String,
-        style: UIAlertAction.Style = .default,
-        response: T,
-        isPreferred: Bool = false,
-        isEnabled: Bool = true
+        style: UIAlertAction.Style,
+        isPreferred: Bool,
+        isEnabled: Bool
     ) {
         self.title = title
         self.style = style
-        self.response = response
         self.isPreferred = isPreferred
         self.isEnabled = isEnabled
     }
-}
 
+    func initializeUIAlertAction(handler: @escaping (UIAlertAction) -> Void) -> UIAlertAction {
+        guard uiAlertAction == nil else {
+            fatalError("Attempted to re-use AlertAction")
+        }
+        let action = UIAlertAction(title: title, style: style, handler: handler)
+        action.isEnabled = isEnabled
+        self.uiAlertAction = action
+        return action
+    }
+}
 
 
 public extension AlertAction {
 
     static func cancel(
         title: String,
-        response: T,
         isPreferred: Bool = false,
         isEnabled: Bool = true
     ) -> Self {
-        Self(title: title, style: .cancel, response: response, isPreferred: isPreferred, isEnabled: isEnabled)
+        Self(title: title, style: .cancel, isPreferred: isPreferred, isEnabled: isEnabled)
     }
 
     static func destructive(
         title: String,
-        response: T,
         isPreferred: Bool = false,
         isEnabled: Bool = true
     ) -> Self {
-        Self(title: title, style: .destructive, response: response, isPreferred: isPreferred, isEnabled: isEnabled)
+        Self(title: title, style: .destructive, isPreferred: isPreferred, isEnabled: isEnabled)
     }
 
     static func `default`(
         title: String,
-        response: T,
         isPreferred: Bool = false,
         isEnabled: Bool = true
     ) -> Self {
-        Self(title: title, style: .default, response: response, isPreferred: isPreferred, isEnabled: isEnabled)
+        Self(title: title, style: .default, isPreferred: isPreferred, isEnabled: isEnabled)
     }
 }
 
 
-// MARK: - WIP
+public extension AlertAction {
 
-func todo() {
-    let confirmAction = AlertAction(title: "Confirm", response: true)
-    let alertInput = AlertInput { textField in
-        let isEmpty = (textField.text ?? "").trimmingCharacters(in: .whitespaces).isEmpty
-        let isValid = !isEmpty
-        confirmAction.isEnabled = isValid
-    }
+    var isCancel: Bool { style == .cancel }
 
-    let alertController = AlertController(
-        title: "Hiya!",
-        inputs: [
-            alertInput
-        ],
-        actions: [
-            confirmAction,
-            .cancel(title: "Cancel", response: false)
-        ])
+    var isDestructive: Bool { style == .destructive }
+
+    var isDefault: Bool { style == .default }
 }
