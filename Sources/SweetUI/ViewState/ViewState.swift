@@ -60,18 +60,19 @@ public class BaseViewState {
     private struct ObserverWrapper: Hashable {
 
         weak var observer: ViewStateObserver?
+        let observerHashValue: Int
+
+        init(observer: ViewStateObserver) {
+            self.observer = observer
+            self.observerHashValue = ObjectIdentifier(observer).hashValue
+        }
 
         static func ==(lhs: ObserverWrapper, rhs: ObserverWrapper) -> Bool {
-            lhs.observer === rhs.observer
+            lhs.observerHashValue == rhs.observerHashValue
         }
 
         func hash(into hasher: inout Hasher) {
-            guard let observer else {
-                hasher.combine(0)
-                return
-            }
-            let id = ObjectIdentifier(observer)
-            hasher.combine(id)
+            hasher.combine(observerHashValue)
         }
     }
 
@@ -84,6 +85,8 @@ public class BaseViewState {
     // MARK: Host Management
 
     public func addObserver(_ observer: ViewStateObserver) {
+        wrappers = wrappers.filter { $0.observer != nil }
+
         let wrapper = ObserverWrapper(observer: observer)
         wrappers.insert(wrapper)
     }
@@ -93,6 +96,8 @@ public class BaseViewState {
     }
 
     func notifyObserversOfViewStateChange() {
+        wrappers = wrappers.filter { $0.observer != nil }
+        
         for wrapper in wrappers {
             wrapper.observer?.viewStateDidChange()
         }
