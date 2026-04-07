@@ -6,13 +6,13 @@ import PackageDescription
 
 
 let package = Package(
-    name: "SweetUI",
+    name: "UICandy",
     platforms: [.iOS(.v13), .macOS(.v10_15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "SweetUI",
-            targets: ["SweetUI"]
+            name: "UICandy",
+            targets: ["UICandy"]
         ),
     ],
     dependencies: [
@@ -29,13 +29,13 @@ let package = Package(
         // ),
 
         .target(
-            name: "SweetUI",
+            name: "UICandy",
             dependencies: []
         ),
 
         .testTarget(
-            name: "SweetUITests",
-            dependencies: ["SweetUI"]
+            name: "UICandyTests",
+            dependencies: ["UICandy"]
         ),
     ]
 )
