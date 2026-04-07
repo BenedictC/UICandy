@@ -1,16 +1,16 @@
-# SweetUI 🍬
+# UICandy 🍬
 
-SweetUI adds a little sugar to UIKit. Goals:
+UICandy adds a little sugar to UIKit. Goals:
 
 - **🍬 Thin abstraction on top of UIKit (i.e. syntactic sugar)**
-  SweetUI only depends on Foundation, UIKit and Combine. The expected behaviour of UIKit classes remains unchanged. This means that SweetUI features can be adopted incrementally.
+  UICandy only depends on Foundation, UIKit and Combine. The expected behaviour of UIKit classes remains unchanged. This means that UICandy features can be adopted incrementally.
 - **🚫 Banish storyboards and nibs**
-  SweetUI view and view controller subclasses must be defined entirely in code. By subclassing from SweetUI's `View` and `ViewController` classes you'll be saved from dealing with `init(coder:)` and `init(nibName:bundle:)`.   
+  UICandy view and view controller subclasses must be defined entirely in code. By subclassing from UICandy's `View` and `ViewController` classes you'll be saved from dealing with `init(coder:)` and `init(nibName:bundle:)`.   
 - **📐 Declarative style for view layout**
-  Declarative style for view layout is easier to more concise than imperative style. A layout created using SweetUI is a standard UIKit layout so it can be changed and updated using standard UIKit methods.
-  SweetUI provides views layout views (e.g. `HStack`) and modifiers that allow standard UIKit view layouts to be expressed declaratively. In most cases you'll never need to directly deal with `NSLayoutConstraint`s. 
+  Declarative style for view layout is easier to more concise than imperative style. A layout created using UICandy is a standard UIKit layout so it can be changed and updated using standard UIKit methods.
+  UICandy provides views layout views (e.g. `HStack`) and modifiers that allow standard UIKit view layouts to be expressed declaratively. In most cases you'll never need to directly deal with `NSLayoutConstraint`s. 
 - **🇺🇳 Integrates with Combine for state management**
-  Combine enables SweetUI to reduce the amount boilerplate code need to keep views up to date. SweetUI also aims to handle storing `Cancellable`s reducing boiler plate code even further.
+  Combine enables UICandy to reduce the amount boilerplate code need to keep views up to date. UICandy also aims to handle storing `Cancellable`s reducing boiler plate code even further.
 - **🎁 And more!**
   Other features include: 
     - Modal, sheet and popover presentation with `async`/`await`
@@ -30,7 +30,7 @@ The follow code shows a simple `ViewController` subclass. Note:
 
 ```
 import UIKit
-import SweetUI
+import UICandy
 
 
 final class SimpleExampleViewController: ViewController {
@@ -44,7 +44,7 @@ final class SimpleExampleViewController: ViewController {
                 .text("Hello \(name)!")
             UILabel()
                 .font(.subheadline)
-                .text("Welcome to SweetUI")
+                .text("Welcome to UICandy")
         }
     }
     
@@ -57,7 +57,7 @@ final class SimpleExampleViewController: ViewController {
 
 <img src="Images/example.jpg" width="356" height="772" alt="FormViewController screenshot">
 
-The Demo app contains more examples of what's possible with SweetUI.
+The Demo app contains more examples of what's possible with UICandy.
 
 
 # Miscellaneous Notes
