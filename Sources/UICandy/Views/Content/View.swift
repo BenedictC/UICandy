@@ -84,6 +84,12 @@ public extension _View {
 }
 
 
+public extension ViewBodyProvider where Self: _View {
+
+    var body: Self { self }
+}
+
+
 // MARK: - Compile-time conformance check
 
 private class CompilationCheck: View {
