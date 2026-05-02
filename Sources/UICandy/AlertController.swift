@@ -7,8 +7,7 @@ public class AlertController: UIAlertController {
 
     // MARK: Properties
 
-    public var completion: ((AlertAction?) -> Void)?
-    public private(set) var selectedAction: AlertAction?
+    var inputs = [AlertInput]()
 
 
     // MARK: Instance life cycle
@@ -19,26 +18,21 @@ public class AlertController: UIAlertController {
         preferredStyle: UIAlertController.Style = .alert,
         inputs: [AlertInput] = [],
         actions: [AlertAction],
-        completion: ((AlertAction?) -> Void)? = nil
     ) {
         self.init(title: title, message: message, preferredStyle: preferredStyle)
+        self.inputs = inputs
 
         for input in inputs {
             addTextField(configurationHandler: { input.configure(textField: $0) })
         }
         var preferredAlertAction: UIAlertAction?
         for action in actions {
-            let uiAlertAction = action.initializeUIAlertAction(handler: { [weak self] _ in
-                self?.selectedAction = action
-            })
-            addAction(uiAlertAction)
+            addAction(action)
             if action.isPreferred {
-                preferredAlertAction = uiAlertAction
+                preferredAlertAction = action
             }
         }
         self.preferredAction = preferredAlertAction
-
-        self.completion = completion
     }
 
 
@@ -51,11 +45,6 @@ public class AlertController: UIAlertController {
             view.tintColor = tintColor.withAlphaComponent(0.9)
             view.tintColor = tintColor
         }
-    }
-
-    public override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        completion?(selectedAction)
     }
 }
 
@@ -80,7 +69,7 @@ public final class AlertInput: NSObject {
 
     func configure(textField: UITextField) {
         configuration(textField)
-        textField.addTarget(self, action: #selector(handleValueChanged(of: )), for: .valueChanged)
+        textField.addTarget(self, action: #selector(handleValueChanged(of: )), for: .editingChanged)
         handleValueChanged(of: textField) // initialize text & attributedText
     }
 
@@ -96,39 +85,20 @@ public final class AlertInput: NSObject {
 
 // MARK: - AlertAction
 
-public final class AlertAction {
+public final class AlertAction: UIAlertAction {
 
-    public let title: String
-    public let style: UIAlertAction.Style
-    public let isPreferred: Bool
+    public internal(set) var isPreferred = false
 
-    public var isEnabled: Bool {
-        didSet { uiAlertAction?.isEnabled = isEnabled }
-    }
-
-    internal var uiAlertAction: UIAlertAction?
-
-
-    init(
+    convenience init(
         title: String,
         style: UIAlertAction.Style,
         isPreferred: Bool,
-        isEnabled: Bool
+        isEnabled: Bool,
+        handler: @escaping (UIAlertAction) -> Void
     ) {
-        self.title = title
-        self.style = style
+        self.init(title: title, style: style, handler: handler)
         self.isPreferred = isPreferred
         self.isEnabled = isEnabled
-    }
-
-    func initializeUIAlertAction(handler: @escaping (UIAlertAction) -> Void) -> UIAlertAction {
-        guard uiAlertAction == nil else {
-            fatalError("Attempted to re-use AlertAction")
-        }
-        let action = UIAlertAction(title: title, style: style, handler: handler)
-        action.isEnabled = isEnabled
-        self.uiAlertAction = action
-        return action
     }
 }
 
@@ -138,25 +108,28 @@ public extension AlertAction {
     static func cancel(
         title: String,
         isPreferred: Bool = false,
-        isEnabled: Bool = true
+        isEnabled: Bool = true,
+        handler: @escaping (UIAlertAction) -> Void = { _ in }
     ) -> Self {
-        Self(title: title, style: .cancel, isPreferred: isPreferred, isEnabled: isEnabled)
+        Self(title: title, style: .cancel, isPreferred: isPreferred, isEnabled: isEnabled, handler: handler)
     }
 
     static func destructive(
         title: String,
         isPreferred: Bool = false,
-        isEnabled: Bool = true
+        isEnabled: Bool = true,
+        handler: @escaping (UIAlertAction) -> Void = { _ in }
     ) -> Self {
-        Self(title: title, style: .destructive, isPreferred: isPreferred, isEnabled: isEnabled)
+        Self(title: title, style: .destructive, isPreferred: isPreferred, isEnabled: isEnabled, handler: handler)
     }
 
     static func `default`(
         title: String,
         isPreferred: Bool = false,
-        isEnabled: Bool = true
+        isEnabled: Bool = true,
+        handler: @escaping (UIAlertAction) -> Void = { _ in }
     ) -> Self {
-        Self(title: title, style: .default, isPreferred: isPreferred, isEnabled: isEnabled)
+        Self(title: title, style: .default, isPreferred: isPreferred, isEnabled: isEnabled, handler: handler)
     }
 }
 
