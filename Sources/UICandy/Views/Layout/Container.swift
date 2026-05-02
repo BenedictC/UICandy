@@ -7,7 +7,7 @@ public class Container<Content>: UIView {
     public var allowsPassThrough: Bool = false
 
 
-    init(content: Content!) {
+    public init(content: Content!) {
         self.content = content
         super.init(frame: .zero)
     }
@@ -25,7 +25,7 @@ public class Container<Content>: UIView {
 }
 
 
-// MARK: - Modifiers
+// MARK: - Initializers
 
 public extension Container {
 
@@ -38,8 +38,14 @@ public extension Container {
 
     convenience init(unarrangedContent: Content, arrangeUsing contentConfigurator: (Content, Self) -> Void) {
         self.init(content: unarrangedContent)
-        contentConfigurator(content, self)
+        contentConfigurator(unarrangedContent, self)
     }
+}
+
+
+// MARK: - Modifiers
+
+public extension Container {
 
     func allowsPassThrough(_ value: Bool) -> Self {
         self.allowsPassThrough = value
